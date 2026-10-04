@@ -88,6 +88,8 @@ input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);background:r
 .item-del{width:28px;height:28px;border-radius:8px;background:rgba(239,68,68,.18);color:#fca5a5;display:grid;place-items:center;transition:background .2s,transform .2s var(--ease-bounce)}
 .item-del:hover{background:rgba(239,68,68,.35)}
 .empty-tip{text-align:center;color:var(--text-dim);font-size:13.5px;padding:44px 20px;line-height:2;animation:fadeIn .5s ease}
+/* 称号徽章 */
+.title-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:linear-gradient(135deg,rgba(var(--accent-rgb),.35),rgba(var(--accent-rgb),.12));border:1px solid rgba(var(--accent-rgb),.45);color:var(--text);margin-left:6px;vertical-align:middle;white-space:nowrap}
 .chat{flex:1;display:flex;flex-direction:column;border-radius:26px;overflow:hidden;position:relative;max-width:100%}
 #chatEmpty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--text-dim);text-align:center;padding:30px;animation:fadeIn .6s ease}
 .chat-inner{flex:1;display:flex;flex-direction:column;min-height:0}
@@ -107,6 +109,7 @@ input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);background:r
 .bubble-img{padding:5px;overflow:hidden;max-width:100%}
 .bubble-img img{max-width:100%;max-height:320px;border-radius:14px;display:block;object-fit:cover;transition:transform .3s var(--ease-bounce)}
 .btime{font-size:10.5px;color:var(--text-dim);margin:5px 5px 0;opacity:.8}
+.sender{font-size:11.5px;color:var(--text-dim);margin:0 0 5px 4px;display:flex;align-items:center}
 .composer{display:flex;gap:10px;align-items:flex-end;padding:14px 18px;border-top:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.022);transition:background .2s}
 .composer textarea{flex:1;resize:none;max-height:150px;min-height:46px;padding:13px 16px;font-size:14.5px;line-height:1.5;border-radius:16px;transition:height .1s}
 .img-btn{width:46px;height:46px;flex:0 0 auto;border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);font-size:18px;transition:background .22s,transform .2s var(--ease-bounce)}
@@ -165,7 +168,7 @@ input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);background:r
       <button class="icon-btn" id="btnProfile" title="个人中心">👤</button><button class="icon-btn" id="btnLogout" title="退出登录">⎋</button>
     </div>
     <div class="side-actions"><button class="pill-btn" id="btnAddFriend">＋ 加好友</button><button class="pill-btn" id="btnNewGroup">✦ 建群</button></div>
-    <div class="search-wrap"><input id="searchInput" placeholder="搜索聊天 / 好友…" /></div>
+    <div class="search-wrap"><input id="searchInput" placeholder="搜索聊天 / 好友 / ID…" /></div>
     <div class="side-tabs"><button class="st active" data-view="chats">消息</button><button class="st" data-view="friends">好友</button></div>
     <div class="list" id="list"></div>
   </aside>
@@ -209,6 +212,7 @@ let authMode = 'login';
 function toast(msg){ let el=$('#toast'); if(!el){el=document.createElement('div');el.id='toast';document.body.appendChild(el);} el.textContent=msg; el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),2200); }
 function avatarHTML(u, cls='') { if(!u) return `<div class="avatar ${cls}">?</div>`; if(u.avatar) return `<div class="avatar ${cls}"><img src="${esc(u.avatar)}"></div>`; return `<div class="avatar ${cls}" style="background:linear-gradient(140deg,#5eead4,#0ea5e9)">${esc((u.name||'?')[0])}</div>`; }
 function fmtTime(ts){ const d=new Date(Number(ts)); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+function titleBadge(t){ return t ? `<span class="title-badge">${esc(t)}</span>` : ''; }
 
 async function boot() {
   const savedId = localStorage.getItem('chat_uid');
@@ -229,7 +233,7 @@ $('#authForm').onsubmit = async e => {
       const users = await sbFetch('users', 'GET', null, 'select=id');
       let max = 0; users.forEach(u => { const n = parseInt(u.id); if (n > max) max = n; });
       const id = String(max+1).padStart(6, '0');
-      await sbFetch('users', 'POST', { id, name, pwd, avatar: '', banned: false, created_at: Date.now() });
+      await sbFetch('users', 'POST', { id, name, pwd, avatar: '', banned: false, title: '', created_at: Date.now() });
       localStorage.setItem('chat_uid', id); await loadMe(id); toast('注册成功，你的 ID 是 ' + id);
     } else {
       const id = $('#loginId').value.trim();
@@ -249,6 +253,7 @@ async function loadMe(id) {
     const users = await sbFetch('users', 'GET', null, `id=eq.${id}`);
     const u = users[0];
     if (!u) return showAuth();
+    if (u.banned === true) { toast('该账号已被封禁'); return showAuth(); }
     me = u; $('#authScreen').classList.add('hidden'); $('#mainScreen').classList.remove('hidden');
     refreshProfile(); renderList();
     if (pollingTimer) clearInterval(pollingTimer);
@@ -258,7 +263,8 @@ async function loadMe(id) {
 
 function refreshProfile() {
   const av = $('#myAvatar'); av.outerHTML = avatarHTML(me, 'lg').replace('class="avatar lg"', 'class="avatar lg" id="myAvatar" style="cursor:pointer"');
-  $('#myName').textContent = me.name; $('#myId').textContent = 'ID: ' + me.id;
+  $('#myName').innerHTML = esc(me.name) + titleBadge(me.title);
+  $('#myId').textContent = 'ID: ' + me.id;
 }
 $('#myId').onclick = () => navigator.clipboard.writeText(me.id).then(()=>toast('ID已复制：'+me.id));
 $('#myAvatar').onclick = () => openProfile();
@@ -287,7 +293,8 @@ async function renderList() {
       if (!ids.length) html = '<div class="empty-tip">还没有好友<br>用 ID 搜索并添加吧 🔍</div>';
       else {
         const users = await sbFetch('users', 'GET', null, `id=in.(${ids.join(',')})`);
-        html = users.map(u => `<div class="item" onclick="startDM('${u.id}')">${avatarHTML(u)}<div class="item-body"><div class="item-name">${esc(u.name)}</div><div class="item-sub">ID: ${u.id}</div></div><div class="item-actions"><button class="item-del" onclick="event.stopPropagation();delFriend('${u.id}')">✕</button></div></div>`).join('');
+        const filtered = users.filter(u => !q || (u.name||'').toLowerCase().includes(q) || u.id.includes(q));
+        html = filtered.map(u => `<div class="item" onclick="startDM('${u.id}')">${avatarHTML(u)}<div class="item-body"><div class="item-name">${esc(u.name)}${titleBadge(u.title)}</div><div class="item-sub">ID: ${u.id}</div></div><div class="item-actions"><button class="item-del" onclick="event.stopPropagation();delFriend('${u.id}')">✕</button></div></div>`).join('');
       }
     }
     $('#list').innerHTML = html;
@@ -301,7 +308,7 @@ async function openChat(id) {
     if (!c || c.deleted) return toast('该聊天已解散');
     activeChat = c; document.body.classList.add('show-chat');
     $('#chatEmpty').classList.add('hidden'); $('#chatInner').classList.remove('hidden');
-    $('#chatName').textContent = c.type === 'dm' ? '私聊' : c.name;
+    $('#chatName').innerHTML = c.type === 'dm' ? '私聊' : esc(c.name);
     $('#chatSub').textContent = c.type === 'group' ? c.members.length + ' 位成员' : '';
     $('#btnGroupSettings').classList.toggle('hidden', c.type !== 'group');
     renderMessages();
@@ -310,11 +317,21 @@ async function openChat(id) {
 
 function renderMessages() {
   if (!activeChat) return;
-  sbFetch('messages', 'GET', null, `chat_id=eq.${activeChat.id}&order=created_at.asc`).then(msgs => {
+  sbFetch('messages', 'GET', null, `chat_id=eq.${activeChat.id}&order=created_at.asc`).then(async msgs => {
+    const senderIds = [...new Set(msgs.map(m => m.sender))];
+    let senders = {};
+    if (senderIds.length) {
+      const users = await sbFetch('users', 'GET', null, `id=in.(${senderIds.join(',')})`);
+      users.forEach(u => { senders[u.id] = u; });
+    }
     $('#messages').innerHTML = msgs.map(m => {
       const mine = m.sender === me.id;
+      const u = senders[m.sender];
+      const name = u ? u.name : '未知用户';
+      const title = u ? u.title : '';
       let content = m.type === 'image' ? `<div class="bubble bubble-img"><img src="${esc(m.content)}"></div>` : `<div class="bubble">${esc(m.content)}</div>`;
-      return `<div class="msg ${mine?'me':''}"><div class="bwrap">${content}<div style="font-size:10.5px;color:var(--text-dim);margin-top:4px">${fmtTime(m.created_at)}</div></div></div>`;
+      const isGroup = activeChat.type === 'group';
+      return `<div class="msg ${mine?'me':''}">${isGroup && u ? avatarHTML(u,'sm') : ''}<div class="bwrap">${isGroup && !mine ? `<div class="sender">${esc(name)}${titleBadge(title)}</div>` : ''}${content}<div style="font-size:10.5px;color:var(--text-dim);margin-top:4px">${fmtTime(m.created_at)}</div></div></div>`;
     }).join('');
     $('#messages').scrollTop = $('#messages').scrollHeight;
   }).catch(()=>{});
@@ -364,25 +381,41 @@ async function delFriend(fid) {
   } catch (err) { toast('删除好友失败：' + err.message); }
 }
 $('#btnAddFriend').onclick = () => {
-  openModal('<div class="modal-head"><h3>添加好友</h3><button class="icon-btn" data-close>✕</button></div><div class="modal-body"><div class="field"><label>输入对方 ID</label><input id="fId" maxlength="6"></div><button class="primary-btn" id="doAdd">加好友</button></div>', md => {
-    md.querySelector('#doAdd').onclick = async () => {
-      const id = md.querySelector('#fId').value.trim();
-      if (id === me.id) return toast('不能加自己');
+  openModal('<div class="modal-head"><h3>添加好友 / 搜索用户</h3><button class="icon-btn" data-close>✕</button></div><div class="modal-body"><div class="field"><label>输入对方 ID</label><input id="fId" maxlength="6" placeholder="例如 000002"></div><button class="primary-btn" id="doSearch">搜索</button><div id="searchResult" style="margin-top:12px"></div></div>', md => {
+    const input = md.querySelector('#fId');
+    const result = md.querySelector('#searchResult');
+    setTimeout(() => input.focus(), 80);
+    async function doSearch() {
+      const id = input.value.trim();
+      if (!id) { result.innerHTML = ''; return; }
+      if (id === me.id) return result.innerHTML = '<div class="empty-tip" style="padding:18px 6px">这是你自己的 ID 😄</div>';
       try {
-        const u = (await sbFetch('users', 'GET', null, `id=eq.${id}`))[0];
-        if (!u) return toast('用户不存在');
-        await sbFetch('friends', 'POST', [{ user_id: me.id, friend_id: id }, { user_id: id, friend_id: me.id }]);
-        toast('已添加 ' + u.name); closeModal(); renderList();
-      } catch (err) { toast('添加失败：' + err.message); }
-    };
+        const users = await sbFetch('users', 'GET', null, `id=eq.${id}`);
+        const u = users[0];
+        if (!u) return result.innerHTML = '<div class="empty-tip" style="padding:18px 6px">没有找到这个 ID 的用户</div>';
+        const isFriend = (await sbFetch('friends', 'GET', null, `user_id=eq.${me.id}&friend_id=eq.${id}`)).length > 0;
+        result.innerHTML = `<div class="pick" style="cursor:default">${avatarHTML(u,'sm')}<div style="flex:1"><div class="item-name">${esc(u.name)}${titleBadge(u.title)}</div><div class="item-sub">ID: ${u.id}</div></div>${isFriend ? `<button class="ghost-btn" onclick="startDM('${u.id}')">聊天</button>` : `<button class="ghost-btn" id="addBtn" style="background:rgba(var(--accent-rgb),.22);border-color:rgba(var(--accent-rgb),.5)">加好友</button>`}</div>`;
+        if (!isFriend) {
+          result.querySelector('#addBtn').onclick = async () => {
+            try {
+              await sbFetch('friends', 'POST', [{ user_id: me.id, friend_id: id }, { user_id: id, friend_id: me.id }]);
+              toast('已添加 ' + u.name); closeModal(); renderList();
+            } catch (err) { toast('添加失败：' + err.message); }
+          };
+        }
+      } catch (err) { result.innerHTML = `<div class="empty-tip" style="padding:18px 6px">搜索失败：${esc(err.message)}</div>`; }
+    }
+    md.querySelector('#doSearch').onclick = doSearch;
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+    input.addEventListener('input', () => { if (input.value.length === 6) doSearch(); });
   });
 };
 $('#btnNewGroup').onclick = async () => {
   try {
     const fr = await sbFetch('friends', 'GET', null, `user_id=eq.${me.id}&select=friend_id`);
     const ids = fr.map(f => f.friend_id);
-    const users = await sbFetch('users', 'GET', null, `id=in.(${ids.join(',')})`);
-    openModal(`<div class="modal-head"><h3>创建群聊</h3><button class="icon-btn" data-close>✕</button></div><div class="modal-body"><div class="field"><label>群名称</label><input id="gName"></div><div class="field"><label>选择成员</label>${users.map(u=>`<label class="pick"><input type="checkbox" value="${u.id}">${avatarHTML(u,'sm')} ${u.name}</label>`).join('')}</div><button class="primary-btn" id="doCreate">创建群聊</button></div>`, md => {
+    const users = ids.length ? await sbFetch('users', 'GET', null, `id=in.(${ids.join(',')})`) : [];
+    openModal(`<div class="modal-head"><h3>创建群聊</h3><button class="icon-btn" data-close>✕</button></div><div class="modal-body"><div class="field"><label>群名称</label><input id="gName"></div><div class="field"><label>选择成员</label>${users.map(u=>`<label class="pick"><input type="checkbox" value="${u.id}">${avatarHTML(u,'sm')} ${u.name}</label>`).join('') || '<div class="empty-tip">还没有好友，先去加好友吧</div>'}</div><button class="primary-btn" id="doCreate">创建群聊</button></div>`, md => {
       md.querySelector('#doCreate').onclick = async () => {
         const name = md.querySelector('#gName').value.trim();
         const members = [me.id, ...[...md.querySelectorAll('input:checked')].map(i=>i.value)];
@@ -400,7 +433,7 @@ $('#btnGroupSettings').onclick = async () => {
   const isOwner = activeChat.owner === me.id;
   try {
     const us = await sbFetch('users', 'GET', null, `id=in.(${activeChat.members.join(',')})`);
-    openModal(`<div class="modal-head"><h3>群设置</h3><button class="icon-btn" data-close>✕</button></div><div class="modal-body"><div class="field"><label>群成员</label>${us.map(u=>`<div class="pick" style="cursor:default">${avatarHTML(u,'sm')} ${u.name} ${u.id===activeChat.owner?'👑':''} ${isOwner&&u.id!==me.id?`<button class="item-del" onclick="kick('${u.id}')">踢</button>`:''}</div>`).join('')}</div>${isOwner ? `<button class="danger-btn" id="doDissolve" style="width:100%">解散群聊</button>` : `<button class="danger-btn" id="doExit" style="width:100%">退出群聊</button>`}<div style="height:8px"></div><button class="primary-btn" data-close>关闭</button></div>`, md => {
+    openModal(`<div class="modal-head"><h3>群设置</h3><button class="icon-btn" data-close>✕</button></div><div class="modal-body"><div class="field"><label>群成员</label>${us.map(u=>`<div class="pick" style="cursor:default">${avatarHTML(u,'sm')} <span style="flex:1">${esc(u.name)}${titleBadge(u.title)} ${u.id===activeChat.owner?'👑':''}</span> ${isOwner&&u.id!==me.id?`<button class="item-del" onclick="kick('${u.id}')">踢</button>`:''}</div>`).join('')}</div>${isOwner ? `<button class="danger-btn" id="doDissolve" style="width:100%">解散群聊</button>` : `<button class="danger-btn" id="doExit" style="width:100%">退出群聊</button>`}<div style="height:8px"></div><button class="primary-btn" data-close>关闭</button></div>`, md => {
       if (isOwner) md.querySelector('#doDissolve').onclick = async () => {
         if (!confirm('确定解散？')) return;
         try {
@@ -421,7 +454,7 @@ $('#btnGroupSettings').onclick = async () => {
 };
 window.kick = async (id) => { if(!confirm('确定踢出？')) return; try { const nm = activeChat.members.filter(i=>i!==id); await sbFetch('chats', 'PATCH', {members: nm}, `id=eq.${activeChat.id}`); renderMessages(); toast('已踢出'); } catch(err) { toast('踢出失败：' + err.message); } };
 function openProfile() {
-  openModal(`<div class="modal-head"><h3>个人中心</h3><button class="icon-btn" data-close>✕</button></div><div class="modal-body"><div class="field" style="text-align:center"><div id="prev" style="display:flex;justify-content:center">${avatarHTML(me,'lg')}</div><input type="file" id="avFile" accept="image/*" style="margin-top:10px"></div><div class="field"><label>昵称</label><input id="pName" value="${esc(me.name)}"></div><button class="primary-btn" id="doSave">保存修改</button></div>`, md => {
+  openModal(`<div class="modal-head"><h3>个人中心</h3><button class="icon-btn" data-close>✕</button></div><div class="modal-body"><div class="field" style="text-align:center"><div id="prev" style="display:flex;justify-content:center">${avatarHTML(me,'lg')}</div><input type="file" id="avFile" accept="image/*" style="margin-top:10px"></div><div class="field"><label>昵称</label><input id="pName" value="${esc(me.name)}"></div><div class="field"><label>我的称号</label><input value="${esc(me.title||'（暂无）')}" readonly style="opacity:.6"></div><button class="primary-btn" id="doSave">保存修改</button></div>`, md => {
     let newAv = me.avatar;
     md.querySelector('#avFile').onchange = e => { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = ev => { newAv = ev.target.result; md.querySelector('#prev').innerHTML = `<div class="avatar lg"><img src="${newAv}"></div>`; }; r.readAsDataURL(f); };
     md.querySelector('#doSave').onclick = async () => {
