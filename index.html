@@ -249,7 +249,6 @@ async function loadMe(id) {
     const users = await sbFetch('users', 'GET', null, `id=eq.${id}`);
     const u = users[0];
     if (!u) return showAuth();
-    if (u.banned === true) { toast('该账号已被封禁'); return showAuth(); }
     me = u; $('#authScreen').classList.add('hidden'); $('#mainScreen').classList.remove('hidden');
     refreshProfile(); renderList();
     if (pollingTimer) clearInterval(pollingTimer);
