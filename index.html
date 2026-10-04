@@ -4,1504 +4,317 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Liquid Chat · 液态玻璃聊天室</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box}
 html,body{height:100%}
-:root{
-  --accent:#5eead4;
-  --accent-rgb:94,234,212;
-  --text:#eef2ff;
-  --text-dim:rgba(238,242,255,.52);
-  --glass:rgba(255,255,255,.065);
-  --glass-strong:rgba(255,255,255,.11);
-  --stroke:rgba(255,255,255,.14);
-  --blur:26px;
-  --radius:24px;
-}
-body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
-  color:var(--text);
-  background:#05060b;
-  overflow:hidden;
-  -webkit-font-smoothing:antialiased;
-  -webkit-tap-highlight-color:transparent;
-}
-::-webkit-scrollbar{width:8px;height:8px}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:99px}
-::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.22)}
-::-webkit-scrollbar-track{background:transparent}
-
-.bg{position:fixed;inset:0;z-index:0;overflow:hidden;transition:background .9s ease}
-#bgImage{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity .6s ease}
-#bgImage::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.55))}
-.blob{position:absolute;width:56vmax;height:56vmax;border-radius:50%;filter:blur(95px);opacity:.55;mix-blend-mode:screen;transition:background 1s ease;will-change:transform}
-.b1{top:-20vmax;left:-16vmax;animation:fl1 28s ease-in-out infinite}
-.b2{bottom:-26vmax;right:-18vmax;animation:fl2 34s ease-in-out infinite}
-.b3{top:24%;left:48%;width:40vmax;height:40vmax;animation:fl3 25s ease-in-out infinite}
-.b4{bottom:-14vmax;left:6%;width:36vmax;height:36vmax;animation:fl4 31s ease-in-out infinite}
-@keyframes fl1{50%{transform:translate3d(9vmax,7vmax,0) scale(1.18)}}
-@keyframes fl2{50%{transform:translate3d(-8vmax,-6vmax,0) scale(1.12)}}
-@keyframes fl3{33%{transform:translate3d(-7vmax,5vmax,0) scale(.9)}66%{transform:translate3d(6vmax,-6vmax,0) scale(1.15)}}
-@keyframes fl4{50%{transform:translate3d(7vmax,-5vmax,0) scale(1.2)}}
-.grain{position:absolute;inset:0;opacity:.05;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
-
-.glass{position:relative;background:var(--glass);backdrop-filter:blur(var(--blur)) saturate(185%) brightness(1.07);-webkit-backdrop-filter:blur(var(--blur)) saturate(185%) brightness(1.07);border:1px solid var(--stroke);border-radius:var(--radius);box-shadow:0 24px 70px rgba(0,0,0,.45),0 4px 14px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.24),inset 0 -1px 0 rgba(255,255,255,.05),inset 0 0 60px rgba(255,255,255,.028);isolation:isolate}
-.glass::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;background:radial-gradient(120% 90% at 100% 0%,rgba(var(--accent-rgb),.14),transparent 58%),linear-gradient(142deg,rgba(255,255,255,.17) 0%,rgba(255,255,255,.045) 20%,transparent 46%);mix-blend-mode:screen}
-.glass::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;background:radial-gradient(70% 100% at 50% 128%,rgba(255,255,255,.10),transparent 72%)}
-.glass>*{position:relative;z-index:1}
-
-button,input,textarea{font-family:inherit;color:inherit}
-button{cursor:pointer;border:none;background:none}
-input,textarea{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px 14px;outline:none;color:var(--text);font-size:14.5px;transition:.22s;width:100%}
-input::placeholder,textarea::placeholder{color:rgba(255,255,255,.34)}
-input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);background:rgba(255,255,255,.085);box-shadow:0 0 0 4px rgba(var(--accent-rgb),.13)}
-.primary-btn{width:100%;padding:13px 18px;border-radius:15px;background:linear-gradient(135deg,rgba(var(--accent-rgb),.95),rgba(var(--accent-rgb),.62));color:#04141a;font-weight:700;font-size:15px;letter-spacing:.3px;box-shadow:0 10px 30px rgba(var(--accent-rgb),.28),inset 0 1px 0 rgba(255,255,255,.5);transition:.22s}
-.primary-btn:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(var(--accent-rgb),.42),inset 0 1px 0 rgba(255,255,255,.55)}
-.primary-btn:active{transform:translateY(0) scale(.985)}
-.ghost-btn{padding:10px 16px;border-radius:13px;font-size:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);transition:.2s}
-.ghost-btn:hover{background:rgba(255,255,255,.13)}
-.danger-btn{padding:10px 16px;border-radius:13px;font-size:14px;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.5);color:#fca5a5;transition:.2s}
-.danger-btn:hover{background:rgba(239,68,68,.35);transform:translateY(-1px)}
-.icon-btn{width:38px;height:38px;flex:0 0 auto;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);font-size:15px;transition:.2s}
-.icon-btn:hover{background:rgba(255,255,255,.15);transform:translateY(-1px)}
+:root{--accent:#5eead4;--accent-rgb:94,234,212;--text:#eef2ff;--text-dim:rgba(238,242,255,.52);--glass:rgba(255,255,255,.065);--stroke:rgba(255,255,255,.14);--blur:26px;--radius:24px;}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;color:var(--text);background:#05060b;overflow:hidden;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:99px}
+.bg{position:fixed;inset:0;z-index:0;overflow:hidden}.bg .blob{position:absolute;width:56vmax;height:56vmax;border-radius:50%;filter:blur(95px);opacity:.55;mix-blend-mode:screen;animation:fl 25s ease-in-out infinite}
+.b1{top:-20vmax;left:-16vmax;background:#5eead4}.b2{bottom:-26vmax;right:-18vmax;background:#818cf8;animation-delay:-5s}.b3{top:30%;left:50%;width:40vmax;height:40vmax;background:#f472b6;animation-delay:-10s}
+@keyframes fl{50%{transform:translate3d(10vmax,10vmax,0) scale(1.2)}}
+.glass{position:relative;background:var(--glass);backdrop-filter:blur(var(--blur)) saturate(185%);border:1px solid var(--stroke);border-radius:var(--radius);box-shadow:0 24px 70px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.24)}
+.glass::before{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(120% 90% at 100% 0%,rgba(var(--accent-rgb),.14),transparent 58%),linear-gradient(142deg,rgba(255,255,255,.17),transparent 46%);mix-blend-mode:screen;pointer-events:none}
+button,input,textarea{font-family:inherit;color:inherit;outline:none;border:none;background:none}
+button{cursor:pointer}
+input,textarea{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px;color:var(--text);font-size:14.5px;transition:.22s;width:100%}
+input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);box-shadow:0 0 0 4px rgba(var(--accent-rgb),.13)}
+.primary-btn{width:100%;padding:13px;border-radius:15px;background:linear-gradient(135deg,rgba(var(--accent-rgb),.95),rgba(var(--accent-rgb),.62));color:#04141a;font-weight:700;font-size:15px;box-shadow:0 10px 30px rgba(var(--accent-rgb),.28)}
+.ghost-btn{padding:10px 16px;border-radius:13px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
+.danger-btn{background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.5);color:#fca5a5}
+.icon-btn{width:38px;height:38px;flex:0 0 auto;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);font-size:15px}
 .hidden{display:none!important}
-.muted{color:var(--text-dim)}
-
-.avatar{width:46px;height:46px;flex:0 0 auto;border-radius:15px;display:grid;place-items:center;font-weight:800;font-size:17px;color:#06141b;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 8px 22px rgba(0,0,0,.32);overflow:hidden;user-select:none;letter-spacing:-.5px;position:relative}
+.avatar{width:46px;height:46px;flex:0 0 auto;border-radius:15px;display:grid;place-items:center;font-weight:800;font-size:17px;color:#06141b;overflow:hidden;background:linear-gradient(140deg,#5eead4,#0ea5e9);box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
 .avatar.sm{width:36px;height:36px;border-radius:12px;font-size:14px}
 .avatar.lg{width:60px;height:60px;border-radius:19px;font-size:22px}
 .avatar img{width:100%;height:100%;object-fit:cover;display:block}
-
-.screen{position:fixed;inset:0;z-index:1;display:flex}
-.screen.center{align-items:center;justify-content:center;padding:22px}
-
-.auth-card{width:min(440px,100%);padding:40px 34px 32px;animation:cardIn .65s cubic-bezier(.19,1,.22,1)}
-@keyframes cardIn{from{opacity:0;transform:translateY(26px) scale(.96)}to{opacity:1;transform:none}}
-.brand{text-align:center;margin-bottom:26px}
-.brand-logo{width:74px;height:74px;margin:0 auto 16px;border-radius:24px;display:grid;place-items:center;font-size:36px;background:linear-gradient(140deg,rgba(var(--accent-rgb),.45),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.22);box-shadow:0 18px 50px rgba(var(--accent-rgb),.3),inset 0 2px 0 rgba(255,255,255,.4);animation:bob 5s ease-in-out infinite}
-@keyframes bob{50%{transform:translateY(-8px) rotate(-3deg)}}
-.brand h1{margin:0;font-size:27px;letter-spacing:-.6px;font-weight:800}
-.brand p{margin:7px 0 0;font-size:13px;color:var(--text-dim);letter-spacing:1.4px}
-.tabs{display:flex;gap:5px;padding:5px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);margin-bottom:22px}
-.tabs .tab{flex:1;padding:10px;border-radius:12px;font-size:14.5px;font-weight:600;color:var(--text-dim);transition:.25s}
-.tabs .tab.active{background:linear-gradient(135deg,rgba(var(--accent-rgb),.9),rgba(var(--accent-rgb),.6));color:#04141a;box-shadow:0 6px 18px rgba(var(--accent-rgb),.3)}
-.field{margin-bottom:15px}
-.field label{display:block;font-size:12.5px;color:var(--text-dim);margin-bottom:7px;letter-spacing:.5px}
-.form-msg{font-size:13px;min-height:18px;margin:4px 0 10px;color:#ff8b8b}
-.form-msg.ok{color:var(--accent)}
-
-#mainScreen{padding:16px;gap:16px}
-.sidebar{width:342px;flex:0 0 342px;display:flex;flex-direction:column;border-radius:26px;overflow:hidden}
-.side-head{display:flex;align-items:center;gap:12px;padding:18px 18px 12px}
-.me-info{flex:1;min-width:0}
-.me-name{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.me-id{font-size:11.5px;color:var(--text-dim);margin-top:3px;letter-spacing:.4px;cursor:pointer}
-.me-id:hover{color:var(--accent)}
-.side-actions{display:flex;gap:8px;padding:4px 16px 12px}
-.pill-btn{flex:1;padding:10px;border-radius:13px;font-size:13.5px;font-weight:600;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);transition:.22s}
-.pill-btn:hover{background:rgba(var(--accent-rgb),.18);border-color:rgba(var(--accent-rgb),.4);transform:translateY(-1px)}
-.search-wrap{padding:0 16px 10px}
-.search-wrap input{padding:11px 14px;font-size:13.5px;border-radius:13px}
-.side-tabs{display:flex;gap:4px;padding:0 16px 8px}
-.st{flex:1;padding:9px;border-radius:11px;font-size:13.5px;font-weight:600;color:var(--text-dim);transition:.22s}
-.st.active{background:rgba(255,255,255,.1);color:var(--text)}
-.list{flex:1;overflow-y:auto;padding:6px 10px 14px}
-.item{display:flex;gap:12px;align-items:center;padding:11px 12px;border-radius:16px;cursor:pointer;transition:.2s;position:relative;margin-bottom:2px;border:1px solid transparent}
-.item:hover{background:rgba(255,255,255,.065)}
-.item.active{background:linear-gradient(120deg,rgba(var(--accent-rgb),.2),rgba(var(--accent-rgb),.06));border-color:rgba(var(--accent-rgb),.32);box-shadow:0 8px 26px rgba(var(--accent-rgb),.13)}
-.item-body{flex:1;min-width:0}
-.item-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.item-name{font-size:14.5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.item-time{font-size:11px;color:var(--text-dim);flex:0 0 auto}
-.item-sub{font-size:12.5px;color:var(--text-dim);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.item-actions{display:flex;gap:4px;opacity:0;transition:.2s}
-.item:hover .item-actions{opacity:1}
-.item-del{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:rgba(239,68,68,.18);border:1px solid rgba(239,68,68,.3);color:#fca5a5;font-size:13px}
-.item-del:hover{background:rgba(239,68,68,.35)}
-
+.screen{position:fixed;inset:0;z-index:1;display:flex}.screen.center{align-items:center;justify-content:center;padding:22px}
+.auth-card{width:min(440px,100%);padding:40px;animation:cardIn .6s cubic-bezier(.19,1,.22,1)}
+@keyframes cardIn{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+.brand{text-align:center;margin-bottom:26px}.brand-logo{width:74px;height:74px;margin:0 auto 16px;border-radius:24px;display:grid;place-items:center;font-size:36px;background:linear-gradient(140deg,rgba(var(--accent-rgb),.45),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.22)}
+.brand h1{margin:0;font-size:27px}.brand p{margin:7px 0 0;font-size:13px;color:var(--text-dim)}
+.tabs{display:flex;gap:5px;padding:5px;border-radius:16px;background:rgba(255,255,255,.05);margin-bottom:22px}
+.tab{flex:1;padding:10px;border-radius:12px;font-size:14.5px;color:var(--text-dim)}.tab.active{background:linear-gradient(135deg,rgba(var(--accent-rgb),.9),rgba(var(--accent-rgb),.6));color:#04141a}
+.field{margin-bottom:15px}.field label{display:block;font-size:12.5px;color:var(--text-dim);margin-bottom:7px}
+.form-msg{font-size:13px;min-height:18px;margin:4px 0 10px;color:#ff8b8b}.form-msg.ok{color:var(--accent)}
+#mainScreen{padding:16px;gap:16px}.sidebar{width:342px;flex:0 0 342px;display:flex;flex-direction:column;border-radius:26px;overflow:hidden}
+.side-head{display:flex;align-items:center;gap:12px;padding:18px}.side-actions{display:flex;gap:8px;padding:0 16px 12px}.pill-btn{flex:1;padding:10px;border-radius:13px;font-size:13.5px;font-weight:600;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11)}
+.search-wrap{padding:0 16px 10px}.side-tabs{display:flex;gap:4px;padding:0 16px 8px}.st{flex:1;padding:9px;border-radius:11px;font-size:13.5px;color:var(--text-dim)}.st.active{background:rgba(255,255,255,.1);color:var(--text)}
+.list{flex:1;overflow-y:auto;padding:6px 10px 14px}.item{display:flex;gap:12px;align-items:center;padding:11px 12px;border-radius:16px;cursor:pointer}.item:hover{background:rgba(255,255,255,.065)}
+.item.active{background:linear-gradient(120deg,rgba(var(--accent-rgb),.2),rgba(var(--accent-rgb),.06));border:1px solid rgba(var(--accent-rgb),.32)}
+.item-body{flex:1;min-width:0}.item-name{font-size:14.5px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.item-sub{font-size:12.5px;color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item-actions{opacity:0;transition:.2s}.item:hover .item-actions{opacity:1}.item-del{width:28px;height:28px;border-radius:8px;background:rgba(239,68,68,.18);color:#fca5a5;display:grid;place-items:center}
 .empty-tip{text-align:center;color:var(--text-dim);font-size:13.5px;padding:44px 20px;line-height:2}
-
-.chat{flex:1;display:flex;flex-direction:column;border-radius:26px;overflow:hidden;min-width:0}
-#chatEmpty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--text-dim);text-align:center;padding:30px}
-#chatEmpty .big{font-size:64px;filter:drop-shadow(0 10px 26px rgba(var(--accent-rgb),.35));animation:bob 6s ease-in-out infinite}
-#chatEmpty h2{margin:0;font-size:19px;color:var(--text);font-weight:700;letter-spacing:-.3px}
-#chatEmpty p{margin:0;font-size:13.5px;line-height:1.9}
-.chat-inner{flex:1;display:flex;flex-direction:column;min-height:0}
-.chat-head{display:flex;align-items:center;gap:13px;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.022)}
-.chat-head .chat-name{font-size:16px;font-weight:700}
-.chat-head .chat-sub{font-size:12px;color:var(--text-dim);margin-top:3px}
-.messages{flex:1;overflow-y:auto;padding:22px 22px 10px;scroll-behavior:smooth}
-.sysmsg{text-align:center;font-size:12px;color:var(--text-dim);margin:14px auto;padding:6px 14px;width:fit-content;background:rgba(255,255,255,.055);border-radius:99px;border:1px solid rgba(255,255,255,.07)}
-.msg{display:flex;gap:10px;margin-bottom:16px;align-items:flex-end}
-.msg.me{flex-direction:row-reverse}
-.msg.enter{animation:msgIn .34s cubic-bezier(.19,1,.22,1)}
-@keyframes msgIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
-.bwrap{display:flex;flex-direction:column;max-width:min(620px,72%);min-width:0}
-.msg.me .bwrap{align-items:flex-end}
-.sender{font-size:11.5px;color:var(--text-dim);margin:0 0 5px 4px}
-.bubble{padding:11px 15px;border-radius:18px;font-size:14.5px;line-height:1.6;background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);word-break:break-word;white-space:pre-wrap;box-shadow:0 4px 16px rgba(0,0,0,.16)}
-.msg.me .bubble{background:linear-gradient(135deg,rgba(var(--accent-rgb),.34),rgba(var(--accent-rgb),.15));border-color:rgba(var(--accent-rgb),.42);box-shadow:0 8px 26px rgba(var(--accent-rgb),.2),inset 0 1px 0 rgba(255,255,255,.22);border-bottom-right-radius:6px}
-.msg:not(.me) .bubble{border-bottom-left-radius:6px}
-.bubble-img{padding:5px;overflow:hidden;max-width:100%}
-.bubble-img img{max-width:100%;max-height:320px;border-radius:14px;display:block;object-fit:cover;cursor:pointer;background:rgba(0,0,0,.2)}
-.btime{font-size:10.5px;color:var(--text-dim);margin:5px 5px 0;opacity:.8}
-
-.composer{display:flex;gap:10px;align-items:flex-end;padding:14px 18px 18px;border-top:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.022)}
-.composer textarea{flex:1;resize:none;max-height:150px;min-height:46px;padding:13px 16px;font-size:14.5px;line-height:1.5;border-radius:16px}
-.img-btn{width:46px;height:46px;flex:0 0 auto;border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);font-size:18px;transition:.22s;cursor:pointer}
-.img-btn:hover{background:rgba(255,255,255,.15);transform:translateY(-1px)}
-.img-btn:active{transform:scale(.95)}
-.send-btn{flex:0 0 auto;height:46px;padding:0 24px;border-radius:16px;background:linear-gradient(135deg,rgba(var(--accent-rgb),.95),rgba(var(--accent-rgb),.6));color:#04141a;font-weight:700;font-size:14.5px;box-shadow:0 8px 24px rgba(var(--accent-rgb),.3),inset 0 1px 0 rgba(255,255,255,.5);transition:.22s}
-.send-btn:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(var(--accent-rgb),.45)}
-.send-btn:active{transform:scale(.97)}
-
-.overlay{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(2,4,10,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;transition:opacity .25s;pointer-events:none}
-.overlay.show{opacity:1;pointer-events:auto}
-.modal{width:min(500px,100%);max-height:86vh;overflow-y:auto;border-radius:26px;transform:translateY(18px) scale(.97);transition:transform .32s cubic-bezier(.19,1,.22,1)}
-.overlay.show .modal{transform:none}
-.modal-head{display:flex;align-items:center;justify-content:space-between;padding:20px 22px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
-.modal-head h3{margin:0;font-size:16.5px;font-weight:700;letter-spacing:-.2px}
-.modal-body{padding:20px 22px 22px}
-.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
-.theme-chip{display:flex;flex-direction:column;align-items:center;gap:7px;padding:11px 6px;border-radius:14px;font-size:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);transition:.22s}
-.theme-chip:hover{background:rgba(255,255,255,.11)}
-.theme-chip.on{border-color:rgba(var(--accent-rgb),.75);background:rgba(var(--accent-rgb),.14);box-shadow:0 0 0 3px rgba(var(--accent-rgb),.12)}
-.swatch{width:34px;height:22px;border-radius:8px;box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
-input[type=range]{-webkit-appearance:none;padding:0;height:6px;border-radius:99px;background:rgba(255,255,255,.14);border:none}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);box-shadow:0 3px 12px rgba(var(--accent-rgb),.6);cursor:pointer;border:2px solid rgba(255,255,255,.85)}
-input[type=color]{width:100%;height:44px;padding:4px;border-radius:13px;cursor:pointer;background:rgba(255,255,255,.055)}
-.pick-list{display:flex;flex-direction:column;gap:7px;max-height:300px;overflow-y:auto;padding-right:4px}
-.pick{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:13px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:.18s;font-size:14px}
-.pick:hover{background:rgba(255,255,255,.1)}
-.pick input{width:auto;accent-color:var(--accent);cursor:pointer;flex:0 0 auto;padding:0;height:16px}
-.pick .muted{margin-left:auto;font-size:11.5px}
-.result-card{display:flex;align-items:center;gap:12px;padding:12px;border-radius:15px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);margin-top:10px}
-.result-card .grow{flex:1;min-width:0}
-.result-card .rn{font-weight:650;font-size:14.5px}
-.result-card .ri{font-size:11.5px;color:var(--text-dim);margin-top:3px}
-.id-box{display:flex;align-items:center;gap:10px;padding:13px 16px;border-radius:15px;margin-top:8px;background:rgba(var(--accent-rgb),.1);border:1px dashed rgba(var(--accent-rgb),.45);font-size:20px;font-weight:800;letter-spacing:4px;font-variant-numeric:tabular-nums}
-.id-box span{flex:1}
-
-#toast{position:fixed;left:50%;bottom:44px;transform:translate(-50%,26px);padding:12px 22px;border-radius:99px;font-size:14px;z-index:99;background:rgba(20,24,34,.86);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);box-shadow:0 16px 44px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:.32s cubic-bezier(.19,1,.22,1)}
+.chat{flex:1;display:flex;flex-direction:column;border-radius:26px;overflow:hidden}#chatEmpty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--text-dim);text-align:center;padding:30px}
+.chat-inner{flex:1;display:flex;flex-direction:column;min-height:0}.chat-head{display:flex;align-items:center;gap:13px;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
+.messages{flex:1;overflow-y:auto;padding:22px}.msg{display:flex;gap:10px;margin-bottom:16px}.msg.me{flex-direction:row-reverse}
+.bwrap{display:flex;flex-direction:column;max-width:72%}.msg.me .bwrap{align-items:flex-end}
+.bubble{padding:11px 15px;border-radius:18px;background:rgba(255,255,255,.075);font-size:14.5px;line-height:1.6;word-break:break-word;white-space:pre-wrap}
+.msg.me .bubble{background:linear-gradient(135deg,rgba(var(--accent-rgb),.34),rgba(var(--accent-rgb),.15));border-bottom-right-radius:6px}
+.msg:not(.me) .bubble{border-bottom-left-radius:6px}.bubble-img img{max-width:100%;max-height:300px;border-radius:14px;display:block}
+.composer{display:flex;gap:10px;align-items:flex-end;padding:14px 18px;border-top:1px solid rgba(255,255,255,.08)}
+.send-btn{padding:0 24px;height:46px;border-radius:16px;background:linear-gradient(135deg,rgba(var(--accent-rgb),.95),rgba(var(--accent-rgb),.6));color:#04141a;font-weight:700}
+.overlay{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(2,4,10,.55);backdrop-filter:blur(8px);opacity:0;transition:.25s;pointer-events:none}
+.overlay.show{opacity:1;pointer-events:auto}.modal{width:min(500px,100%);max-height:86vh;overflow-y:auto;border-radius:26px;transform:translateY(18px);transition:.3s}.overlay.show .modal{transform:none}
+#toast{position:fixed;left:50%;bottom:44px;transform:translate(-50%,26px);padding:12px 22px;border-radius:99px;font-size:14px;background:rgba(20,24,34,.86);border:1px solid rgba(255,255,255,.16);opacity:0;transition:.3s;z-index:99}
 #toast.show{opacity:1;transform:translate(-50%,0)}
-
-@media(max-width:880px){
-  #mainScreen{padding:0;gap:0}
-  .sidebar{width:100%;flex:1 1 100%;border-radius:0;border:none;border-right:none}
-  .chat{position:fixed;inset:0;z-index:20;border-radius:0;border:none;transform:translateX(100%);transition:transform .34s cubic-bezier(.19,1,.22,1)}
-  body.show-chat .chat{transform:none}
-  .mobile-back{display:grid!important}
-  .bwrap{max-width:82%}
-  .messages{padding:16px 14px 8px}
-}
-.mobile-back{display:none}
+@media(max-width:880px){#mainScreen{padding:0;gap:0}.sidebar{width:100%;border-radius:0}.chat{position:fixed;inset:0;transform:translateX(100%);transition:transform .34s}body.show-chat .chat{transform:none}.bwrap{max-width:82%}}
 </style>
 </head>
 <body>
 
-<div class="bg" id="bgLayer">
-  <div id="bgImage"></div>
-  <div class="blob b1"></div>
-  <div class="blob b2"></div>
-  <div class="blob b3"></div>
-  <div class="blob b4"></div>
-  <div class="grain"></div>
-</div>
+<div class="bg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
 
-<!-- 登录 / 注册 -->
 <div id="authScreen" class="screen center">
   <div class="auth-card glass">
-    <div class="brand">
-      <div class="brand-logo">💧</div>
-      <h1>Liquid Chat</h1>
-      <p>LIQUID GLASS · 实时聊天室</p>
-    </div>
-
-    <div class="tabs">
-      <button class="tab active" data-mode="login">登录</button>
-      <button class="tab" data-mode="register">注册</button>
-    </div>
-
+    <div class="brand"><div class="brand-logo">💧</div><h1>Liquid Chat</h1><p>LIQUID GLASS · 实时聊天室</p></div>
+    <div class="tabs"><button class="tab active" data-mode="login">登录</button><button class="tab" data-mode="register">注册</button></div>
     <form id="authForm" autocomplete="off">
-      <div id="regFields" class="hidden">
-        <div class="field">
-          <label>昵称</label>
-          <input id="regName" maxlength="12" placeholder="给自己起个名字" />
-        </div>
-      </div>
-
-      <div id="loginFields">
-        <div class="field">
-          <label>账号 ID</label>
-          <input id="loginId" inputmode="numeric" maxlength="6" placeholder="6 位数字 ID" />
-        </div>
-      </div>
-
-      <div class="field">
-        <label>密码</label>
-        <input id="authPwd" type="password" placeholder="至少 4 位" />
-      </div>
-
-      <div id="regFields2" class="hidden">
-        <div class="field">
-          <label>确认密码</label>
-          <input id="regPwd2" type="password" placeholder="再输入一次" />
-        </div>
-      </div>
-
+      <div id="regFields" class="hidden"><div class="field"><label>昵称</label><input id="regName" maxlength="12" placeholder="给自己起个名字" /></div></div>
+      <div id="loginFields"><div class="field"><label>账号 ID</label><input id="loginId" inputmode="numeric" maxlength="6" placeholder="6 位数字 ID" /></div></div>
+      <div class="field"><label>密码</label><input id="authPwd" type="password" placeholder="至少 4 位" /></div>
+      <div id="regFields2" class="hidden"><div class="field"><label>确认密码</label><input id="regPwd2" type="password" placeholder="再输入一次" /></div></div>
       <div class="form-msg" id="authMsg"></div>
       <button type="submit" class="primary-btn" id="authSubmit">登 录</button>
     </form>
   </div>
 </div>
 
-<!-- 主界面 -->
 <div id="mainScreen" class="screen hidden">
   <aside class="sidebar glass">
     <div class="side-head">
-      <div class="avatar" id="myAvatar" style="cursor:pointer" title="点击编辑个人资料">?</div>
-      <div class="me-info">
-        <div class="me-name" id="myName">—</div>
-        <div class="me-id" id="myId" title="点击复制你的 ID">ID: —</div>
-      </div>
-      <button class="icon-btn" id="btnProfile" title="个人中心">👤</button>
-      <button class="icon-btn" id="btnSettings" title="个性化设置">⚙</button>
-      <button class="icon-btn" id="btnLogout" title="退出登录">⎋</button>
+      <div class="avatar" id="myAvatar" style="cursor:pointer">?</div>
+      <div class="me-info"><div id="myName">—</div><div id="myId" style="font-size:11.5px;color:var(--text-dim);cursor:pointer">ID: —</div></div>
+      <button class="icon-btn" id="btnProfile">👤</button><button class="icon-btn" id="btnLogout">⎋</button>
     </div>
-
-    <div class="side-actions">
-      <button class="pill-btn" id="btnAddFriend">＋ 加好友</button>
-      <button class="pill-btn" id="btnNewGroup">✦ 建群</button>
-    </div>
-
-    <div class="search-wrap">
-      <input id="searchInput" placeholder="搜索聊天 / 好友…" />
-    </div>
-
-    <div class="side-tabs">
-      <button class="st active" data-view="chats">消息</button>
-      <button class="st" data-view="friends">好友</button>
-    </div>
-
+    <div class="side-actions"><button class="pill-btn" id="btnAddFriend">＋ 加好友</button><button class="pill-btn" id="btnNewGroup">✦ 建群</button></div>
+    <div class="search-wrap"><input id="searchInput" placeholder="搜索聊天 / 好友…" /></div>
+    <div class="side-tabs"><button class="st active" data-view="chats">消息</button><button class="st" data-view="friends">好友</button></div>
     <div class="list" id="list"></div>
   </aside>
-
   <main class="chat glass">
-    <div id="chatEmpty">
-      <div class="big">🫧</div>
-      <h2>开始你的对话</h2>
-      <p>左侧选择一位好友或群聊<br>也可以点「加好友」用 ID 找到朋友</p>
-    </div>
-
+    <div id="chatEmpty"><div style="font-size:64px">🫧</div><h2>开始你的对话</h2><p>左侧选择一位好友或群聊</p></div>
     <div class="chat-inner hidden" id="chatInner">
-      <header class="chat-head">
-        <button class="icon-btn mobile-back" id="btnBack">‹</button>
-        <div class="avatar" id="chatAvatar">?</div>
-        <div style="flex:1;min-width:0">
-          <div class="chat-name" id="chatName">—</div>
-          <div class="chat-sub" id="chatSub">—</div>
-        </div>
-        <button class="icon-btn hidden" id="btnGroupSettings" title="群设置">⚙️</button>
-      </header>
+      <header class="chat-head"><button class="icon-btn" id="btnBack">‹</button><div class="avatar" id="chatAvatar">?</div><div style="flex:1"><div id="chatName">—</div><div id="chatSub" style="font-size:12px;color:var(--text-dim)">—</div></div><button class="icon-btn hidden" id="btnGroupSettings">⚙️</button></header>
       <div class="messages" id="messages"></div>
-      <div class="composer">
-        <button class="img-btn" id="btnImage" title="发送图片">🖼️</button>
-        <input type="file" id="imageInput" accept="image/*" style="display:none" />
-        <textarea id="msgInput" rows="1" placeholder="输入消息…  （Enter 发送 / Shift+Enter 换行）"></textarea>
-        <button class="send-btn" id="btnSend">发送</button>
-      </div>
+      <div class="composer"><button class="icon-btn" id="btnImage">🖼️</button><input type="file" id="imageInput" accept="image/*" hidden><textarea id="msgInput" rows="1" placeholder="输入消息…"></textarea><button class="send-btn" id="btnSend">发送</button></div>
     </div>
   </main>
 </div>
-
-<div class="overlay hidden" id="overlay">
-  <div class="modal glass" id="modal"></div>
-</div>
+<div class="overlay hidden" id="overlay"><div class="modal glass" id="modal"></div></div>
 
 <script>
-/* =====================================================================
-   工具
-===================================================================== */
-const $  = (s, r = document) => r.querySelector(s);
-const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
-  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const truncate = (s, n) => (s && s.length > n ? s.slice(0, n) + '…' : s || '');
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const uid = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36);
+const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-function hashPwd(str) {
-  let h = 5381;
-  for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
-  return (h >>> 0).toString(36) + '_' + str.length;
-}
-function hexToRgb(hex) {
-  hex = String(hex).replace('#', '');
-  if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
-  const n = parseInt(hex, 16);
-  if (isNaN(n)) return '94,234,212';
-  return `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`;
-}
-function fmtTime(ts, short) {
-  const d = new Date(ts), now = new Date();
-  const same = d.toDateString() === now.toDateString();
-  const hm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-  if (!short) return hm;
-  if (same) return hm;
-  if (d.getFullYear() === now.getFullYear()) return `${d.getMonth() + 1}/${d.getDate()}`;
-  return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
-}
+// ✅ 你的真实密钥已经填好了，直接复制就能用
+const SUPABASE_URL = "https://qjsupbxshubysfnyhbwe.supabase.co";
+const SUPABASE_KEY = "sb_publishable_PLydvfYMjBWnFY2eKSxTgQ_BAxYwTZp"; 
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const AV_COLORS = [
-  ['#5eead4', '#0ea5e9'], ['#a78bfa', '#ec4899'], ['#fbbf24', '#f97316'],
-  ['#34d399', '#10b981'], ['#60a5fa', '#6366f1'], ['#f472b6', '#a855f7'],
-  ['#22d3ee', '#14b8a6'], ['#fca5a5', '#ef4444'], ['#c4b5fd', '#818cf8'],
-];
-function avatarStyle(name, seed) {
-  const s = String(seed || name || 'x');
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
-  const c = AV_COLORS[h % AV_COLORS.length];
-  return `background:linear-gradient(140deg,${c[0]},${c[1]})`;
-}
-function avatarHTML(user, cls = '', id = '') {
-  const idAttr = id ? ` id="${id}"` : '';
-  if (!user) return `<div class="avatar ${cls}"${idAttr}>?</div>`;
-  if (user.avatar) {
-    return `<div class="avatar ${cls}"${idAttr}><img src="${esc(user.avatar)}" alt="" /></div>`;
-  }
-  const name = user.name || '?';
-  return `<div class="avatar ${cls}"${idAttr} style="${avatarStyle(name, user.id)}">${esc(name[0])}</div>`;
-}
+let me = null, activeChat = null, view = 'chats', searchTerm = '', pollingTimer = null;
 
-let toastTimer;
-function toast(msg) {
-  let el = $('#toast');
-  if (!el) { el = document.createElement('div'); el.id = 'toast'; document.body.appendChild(el); }
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+function toast(msg){ let el=$('#toast'); if(!el){el=document.createElement('div');el.id='toast';document.body.appendChild(el);} el.textContent=msg; el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),2200); }
+function avatarHTML(u, cls='') { if(!u) return `<div class="avatar ${cls}">?</div>`; if(u.avatar) return `<div class="avatar ${cls}"><img src="${esc(u.avatar)}"></div>`; return `<div class="avatar ${cls}" style="background:linear-gradient(140deg,#5eead4,#0ea5e9)">${esc((u.name||'?')[0])}</div>`; }
+function fmtTime(ts){ const d=new Date(Number(ts)); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+
+async function boot() {
+  const savedId = localStorage.getItem('chat_uid');
+  if (savedId) { await loadMe(savedId); } else { showAuth(); }
 }
-
-/* =====================================================================
-   主题
-===================================================================== */
-const THEMES = {
-  aurora:  { name: '极光', bg: ['#0b1026', '#141a3d', '#2a1550'], blobs: ['#5eead4', '#818cf8', '#f472b6', '#38bdf8'], accent: '#5eead4', text: '#eef2ff' },
-  abyss:   { name: '深海', bg: ['#04121c', '#062435', '#083344'], blobs: ['#22d3ee', '#0ea5e9', '#2dd4bf', '#3b82f6'], accent: '#22d3ee', text: '#e0f7ff' },
-  ember:   { name: '暮焰', bg: ['#1a0a08', '#2b1208', '#3d1a0a'], blobs: ['#fb923c', '#f43f5e', '#fbbf24', '#ef4444'], accent: '#fb923c', text: '#fff1e6' },
-  orchid:  { name: '幽兰', bg: ['#150a1f', '#26113a', '#3b1553'], blobs: ['#c084fc', '#f472b6', '#a78bfa', '#8b5cf6'], accent: '#c084fc', text: '#f6ecff' },
-  forest:  { name: '森夜', bg: ['#071510', '#0b2419', '#0f3324'], blobs: ['#34d399', '#10b981', '#84cc16', '#22d3ee'], accent: '#34d399', text: '#e8fff5' },
-  obsidian:{ name: '曜石', bg: ['#08090c', '#101218', '#171a22'], blobs: ['#94a3b8', '#64748b', '#a1a1aa', '#38bdf8'], accent: '#e2e8f0', text: '#f1f5f9' },
-};
-
-const DEFAULT_SETTINGS = { theme: 'aurora', accent: '', blur: 26, alpha: 0.065, bgImage: '' };
-
-/* =====================================================================
-   本地存储
-===================================================================== */
-const store = {
-  KEY: 'liquidchat.data.v2',
-  SESSION: 'liquidchat.session',
-  data: null,
-  load() {
-    let raw = null;
-    try { raw = JSON.parse(localStorage.getItem(this.KEY)); } catch (e) { raw = null; }
-    if (!raw || typeof raw !== 'object') raw = {};
-    raw.users    = raw.users    || [];
-    raw.friends  = raw.friends  || {};
-    raw.chats    = raw.chats    || {};
-    raw.messages = raw.messages || {};
-    raw.settings = raw.settings || {};
-    this.data = raw;
-    return this.data;
-  },
-  save() {
-    try { localStorage.setItem(this.KEY, JSON.stringify(this.data)); }
-    catch (e) { toast('本地存储已满，请清理图片或头像'); }
-  },
-  get settings() { return Object.assign({}, DEFAULT_SETTINGS, this.data.settings || {}); },
-  setSettings(patch) {
-    this.data.settings = Object.assign({}, this.settings, patch);
-    this.save();
-  },
-};
-
-/* =====================================================================
-   同步层
-===================================================================== */
-const API_ON = location.protocol !== 'file:';
-let pollTimer = null, pushTimer = null, lastSig = '', connDot = null;
-let lastConnStatus = null;
-
-function dbSig(d) {
-  return JSON.stringify({
-    u: (d.users || []).map(x => x.id + ':' + x.name + ':' + (x.avatar ? '1' : '0')).sort(),
-    f: d.friends || {},
-    c: Object.keys(d.chats || {}).sort(),
-    m: Object.fromEntries(Object.entries(d.messages || {}).map(([k, v]) => [k, v.length])),
-  });
-}
-function setDot(ok) {
-  if (!connDot) return;
-  connDot.style.background = ok ? '#34d399' : '#ef4444';
-  connDot.title = ok ? '已连接服务器' : '未连接服务器';
-  if (lastConnStatus === ok) return;
-  if (ok) {
-    if (lastConnStatus === false) toast('已重新连接 · 消息已同步');
-    else toast('消息已同步');
-  } else {
-    if (lastConnStatus === true) toast('服务器已断开，请检查 Termux 状态');
-    else if (lastConnStatus === null) toast('无法连接服务器，请确认服务器已启动');
-  }
-  lastConnStatus = ok;
-}
-function applyRemote(remote) {
-  if (!remote) return;
-  const sig = dbSig(remote);
-  if (sig === lastSig) return;
-  lastSig = sig;
-
-  const mySettings = (store.data && store.data.settings) || {};
-  store.data = {
-    users: remote.users || [],
-    friends: remote.friends || {},
-    chats: remote.chats || {},
-    messages: remote.messages || {},
-    settings: mySettings,
-  };
-  store.save();
-
-  if (me) {
-    const fresh = store.data.users.find(u => u.id === me.id);
-    if (fresh) me = fresh;
-  }
-  if (activeChat) {
-    activeChat = store.data.chats[activeChat.id] || null;
-    if (!activeChat) document.body.classList.remove('show-chat');
-  }
-  if (!$('#mainScreen').classList.contains('hidden')) {
-    refreshMyProfile();
-    renderList();
-    renderChat();
-  }
-}
-async function fetchDB() {
-  if (!API_ON) return;
-  try {
-    const r = await fetch('/api/db', { cache: 'no-store' });
-    if (!r.ok) throw 0;
-    applyRemote(await r.json());
-    setDot(true);
-  } catch (e) { setDot(false); }
-}
-function pushDB(immediate) {
-  if (!API_ON) return Promise.resolve();
-  clearTimeout(pushTimer);
-  const send = async () => {
-    try {
-      const r = await fetch('/api/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          users: store.data.users,
-          friends: store.data.friends,
-          chats: store.data.chats,
-          messages: store.data.messages,
-        }),
-      });
-      if (r.ok) { applyRemote(await r.json()); setDot(true); }
-    } catch (e) { setDot(false); }
-  };
-  if (immediate) return send();
-  return new Promise(res => { pushTimer = setTimeout(() => send().then(res), 120); });
-}
-function startPolling() {
-  if (!API_ON) return;
-  clearInterval(pollTimer);
-  pollTimer = setInterval(fetchDB, 1800);
-}
-
-let channel = null;
-try { channel = new BroadcastChannel('liquidchat-rt'); } catch (e) {}
-if (channel) channel.onmessage = e => { if (e.data && e.data.t === 'sync') onLocalChange(); };
-window.addEventListener('storage', e => { if (e.key === store.KEY) onLocalChange(); });
-function onLocalChange() {
-  if (API_ON) return;
-  store.load();
-  if (me) { const f = store.data.users.find(u => u.id === me.id); if (f) me = f; }
-  if (activeChat) activeChat = store.data.chats[activeChat.id] || null;
-  if (!$('#mainScreen').classList.contains('hidden')) { refreshMyProfile(); renderList(); renderChat(); }
-}
-function sync() {
-  if (API_ON) pushDB();
-  else if (channel) channel.postMessage({ t: 'sync', at: Date.now() });
-}
-
-/* =====================================================================
-   全局状态
-===================================================================== */
-let me = null;
-let activeChat = null;
-let view = 'chats';
-let searchTerm = '';
-const seen = new Set();
-
-/* =====================================================================
-   主题应用
-===================================================================== */
-function applySettings() {
-  const s = store.settings;
-  const t = THEMES[s.theme] || THEMES.aurora;
-  const accent = s.accent || t.accent;
-  const root = document.documentElement.style;
-  root.setProperty('--accent', accent);
-  root.setProperty('--accent-rgb', hexToRgb(accent));
-  root.setProperty('--text', t.text);
-  root.setProperty('--blur', s.blur + 'px');
-  root.setProperty('--glass', `rgba(255,255,255,${s.alpha})`);
-  root.setProperty('--glass-strong', `rgba(255,255,255,${Math.min(0.9, s.alpha * 1.7)})`);
-
-  $('#bgLayer').style.background = `linear-gradient(150deg, ${t.bg[0]} 0%, ${t.bg[1]} 52%, ${t.bg[2]} 100%)`;
-  $$('.blob').forEach((b, i) => { b.style.background = t.blobs[i % t.blobs.length]; });
-
-  const bgImg = $('#bgImage');
-  if (s.bgImage) {
-    bgImg.style.backgroundImage = `url("${s.bgImage}")`;
-    bgImg.style.opacity = '1';
-  } else {
-    bgImg.style.backgroundImage = '';
-    bgImg.style.opacity = '0';
-  }
-}
-
-/* =====================================================================
-   认证
-===================================================================== */
-let authMode = 'login';
-function setAuthMode(mode) {
-  authMode = mode;
-  $$('.tabs .tab').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
-  $('#regFields').classList.toggle('hidden', mode !== 'register');
-  $('#regFields2').classList.toggle('hidden', mode !== 'register');
-  $('#loginFields').classList.toggle('hidden', mode !== 'login');
-  $('#authSubmit').textContent = mode === 'login' ? '登 录' : '创建账号';
-  const m = $('#authMsg'); m.textContent = ''; m.classList.remove('ok');
-}
-function showAuthMsg(text, ok) {
-  const el = $('#authMsg');
-  el.textContent = text;
-  el.classList.toggle('ok', !!ok);
-}
-function genUserId() {
-  let maxId = 0;
-  store.data.users.forEach(u => {
-    const num = parseInt(u.id, 10);
-    if (!isNaN(num) && num > maxId) maxId = num;
-  });
-  return String(maxId + 1).padStart(6, '0');
-}
-
-$('#authForm').addEventListener('submit', e => {
+function showAuth(){ $('#authScreen').classList.remove('hidden'); $('#mainScreen').classList.add('hidden'); }
+function setAuthMode(mode){ $$('.tab').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode)); $('#regFields').classList.toggle('hidden',mode!=='register'); $('#regFields2').classList.toggle('hidden',mode!=='register'); $('#loginFields').classList.toggle('hidden',mode!=='login'); $('#authSubmit').textContent = mode==='login'?'登 录':'创建账号'; }
+$$('.tab').forEach(b=>b.onclick=()=>setAuthMode(b.dataset.mode));
+$('#authForm').onsubmit = async e => {
   e.preventDefault();
   const pwd = $('#authPwd').value.trim();
-
   if (authMode === 'register') {
     const name = $('#regName').value.trim();
-    const pwd2 = $('#regPwd2').value.trim();
-    if (!name) return showAuthMsg('请输入昵称');
-    if (name.length > 12) return showAuthMsg('昵称最多 12 个字');
-    if (pwd.length < 4) return showAuthMsg('密码至少 4 位');
-    if (pwd !== pwd2) return showAuthMsg('两次输入的密码不一致');
-
-    const id = genUserId();
-    const user = { id, name, pwd: hashPwd(pwd), avatar: '', createdAt: Date.now() };
-    store.data.users.push(user);
-    store.data.friends[id] = store.data.friends[id] || [];
-    store.save();
-    pushDB(true).then(fetchDB);
-
-    localStorage.setItem(store.SESSION, id);
-    me = user;
-    showMain();
-
-    setTimeout(() => {
-      openModal(`
-        <div class="modal-head"><h3>🎉 注册成功</h3><button class="icon-btn" data-close>✕</button></div>
-        <div class="modal-body">
-          <p style="margin:0 0 6px;font-size:13.5px;color:var(--text-dim);line-height:1.8">
-            这是你的专属账号 ID，把它发给朋友就能加好友：
-          </p>
-          <div class="id-box"><span>${id}</span><button class="ghost-btn" id="copyId">复制</button></div>
-          <div style="height:16px"></div>
-          <button class="primary-btn" data-close>开始聊天</button>
-        </div>
-      `, md => {
-        md.querySelector('#copyId').onclick = () => {
-          navigator.clipboard?.writeText(id).then(() => toast('ID 已复制')).catch(() => toast(id));
-        };
-      });
-    }, 320);
-    return;
-  }
-
-  const id = $('#loginId').value.trim();
-  if (!id) return showAuthMsg('请输入账号 ID');
-  const user = store.data.users.find(u => u.id === id);
-  if (!user) return showAuthMsg('该 ID 不存在（请先注册）');
-  if (user.pwd !== hashPwd(pwd)) return showAuthMsg('密码错误');
-
-  localStorage.setItem(store.SESSION, id);
-  me = user;
-  showMain();
-  toast('欢迎回来，' + user.name);
-});
-$$('.tabs .tab').forEach(b => { b.onclick = () => setAuthMode(b.dataset.mode); });
-
-/* =====================================================================
-   界面切换
-===================================================================== */
-function showAuth() {
-  $('#authScreen').classList.remove('hidden');
-  $('#mainScreen').classList.add('hidden');
-}
-function showMain() {
-  $('#authScreen').classList.add('hidden');
-  $('#mainScreen').classList.remove('hidden');
-  refreshMyProfile();
-  activeChat = null;
-  renderList();
-  renderChat();
-}
-function refreshMyProfile() {
-  const av = $('#myAvatar');
-  if (!av) return;
-  if (me.avatar) {
-    av.innerHTML = `<img src="${esc(me.avatar)}" alt="" />`;
-    av.style.cssText = 'cursor:pointer';
+    if (!name || pwd.length < 4) return toast('昵称和密码不能为空（密码至少4位）');
+    if (pwd !== $('#regPwd2').value.trim()) return toast('两次密码不一致');
+    const { data: users } = await supabase.from('users').select('id');
+    let max = 0; users.forEach(u => { const n = parseInt(u.id); if (n > max) max = n; });
+    const id = String(max+1).padStart(6, '0');
+    const { error } = await supabase.from('users').insert({ id, name, pwd, avatar: '', created_at: Date.now() });
+    if (error) return toast('注册失败：' + error.message);
+    localStorage.setItem('chat_uid', id); await loadMe(id); toast('注册成功，你的 ID 是 ' + id);
   } else {
-    av.innerHTML = esc(me.name[0] || '?');
-    av.style.cssText = avatarStyle(me.name, me.id) + ';cursor:pointer';
+    const id = $('#loginId').value.trim();
+    const { data: u } = await supabase.from('users').select('*').eq('id', id).single();
+    if (!u || u.pwd !== pwd) return toast('ID 不存在或密码错误');
+    localStorage.setItem('chat_uid', id); await loadMe(id); toast('欢迎回来，' + u.name);
   }
-  av.title = '点击编辑个人资料';
-  $('#myName').textContent = me.name;
-  $('#myId').textContent = 'ID: ' + me.id;
+};
+async function loadMe(id) {
+  const { data: u } = await supabase.from('users').select('*').eq('id', id).single();
+  if (!u) return showAuth();
+  me = u; $('#authScreen').classList.add('hidden'); $('#mainScreen').classList.remove('hidden');
+  refreshProfile(); renderList();
+  if (pollingTimer) clearInterval(pollingTimer);
+  pollingTimer = setInterval(() => { renderList(); renderMessages(); }, 3000);
 }
+function refreshProfile() {
+  const av = $('#myAvatar'); av.outerHTML = avatarHTML(me, 'lg').replace('class="avatar lg"', 'class="avatar lg" id="myAvatar" style="cursor:pointer"');
+  $('#myName').textContent = me.name; $('#myId').textContent = 'ID: ' + me.id;
+}
+$('#myId').onclick = () => navigator.clipboard.writeText(me.id).then(()=>toast('ID已复制：'+me.id));
+$('#myAvatar').onclick = () => openProfile();
 
-/* =====================================================================
-   聊天辅助
-===================================================================== */
-function dmChatId(a, b) { return 'dm_' + [a, b].sort().join('_'); }
-function getOrCreateDM(a, b) {
-  const id = dmChatId(a, b);
-  if (!store.data.chats[id]) {
-    store.data.chats[id] = { id, type: 'dm', members: [a, b], createdAt: Date.now() };
-    store.data.messages[id] = [];
-    store.save();
-  }
-  return store.data.chats[id];
-}
-function lastTs(chatId) {
-  const m = store.data.messages[chatId];
-  return m && m.length ? m[m.length - 1].ts : 0;
-}
-function chatDisplay(chat) {
-  if (chat.type === 'dm') {
-    const otherId = chat.members.find(id => id !== me.id);
-    const u = store.data.users.find(x => x.id === otherId);
-    return { name: u ? u.name : '已注销用户', emoji: null, sub: u ? 'ID: ' + u.id : '', user: u };
-  }
-  return { name: chat.name, emoji: '👥', sub: chat.members.length + ' 位成员', user: null };
-}
-function openChat(chatId) {
-  const chat = store.data.chats[chatId];
-  if (!chat || chat.deleted) {
-    if (chat && chat.deleted) toast('该群聊已解散');
-    activeChat = null;
-    renderChat();
-    return;
-  }
-  activeChat = chat;
-  seen.clear();
-  document.body.classList.add('show-chat');
-  renderList();
-  renderChat();
-  setTimeout(() => $('#msgInput')?.focus(), 60);
-}
-
-/* =====================================================================
-   渲染列表
-===================================================================== */
-function renderList() {
+async function renderList() {
   if (!me) return;
-  const box = $('#list');
-  const q = searchTerm.trim().toLowerCase();
-  let html = '';
-
+  const q = searchTerm.trim().toLowerCase(); let html = '';
   if (view === 'chats') {
-    const chats = Object.values(store.data.chats)
-      .filter(c => c.members.includes(me.id) && !c.deleted)
-      .sort((a, b) => lastTs(b.id) - lastTs(a.id));
-
-    const filtered = chats.filter(c => !q || chatDisplay(c).name.toLowerCase().includes(q));
-
-    if (!filtered.length) {
-      html = `<div class="empty-tip">${q ? '没有找到相关聊天' : '还没有聊天<br>点「加好友」开始吧 ✨'}</div>`;
-    } else {
-      html = filtered.map(c => {
-        const d = chatDisplay(c);
-        const msgs = store.data.messages[c.id] || [];
-        const last = msgs[msgs.length - 1];
-        let preview = '开始聊天吧';
-        if (last) {
-          if (last.type === 'system') preview = last.text;
-          else if (last.type === 'image') preview = (last.from === me.id ? '我：' : '') + '[图片]';
-          else preview = (last.from === me.id ? '我：' : '') + last.text;
-        }
-        const active = activeChat && activeChat.id === c.id ? 'active' : '';
-        const avHTML = c.type === 'dm' && d.user
-          ? avatarHTML(d.user, '')
-          : `<div class="avatar" style="${avatarStyle(d.name, c.id)}">${d.emoji || esc(d.name[0] || '?')}</div>`;
-        return `<div class="item ${active}" data-chat="${c.id}">
-          ${avHTML}
-          <div class="item-body">
-            <div class="item-top">
-              <span class="item-name">${esc(d.name)}</span>
-              <span class="item-time">${last ? fmtTime(last.ts, true) : ''}</span>
-            </div>
-            <div class="item-sub">${esc(truncate(preview, 30))}</div>
-          </div>
-        </div>`;
+    const { data: chats } = await supabase.from('chats').select('*');
+    const { data: msgs } = await supabase.from('messages').select('*').order('created_at', { ascending: false });
+    const myChats = chats.filter(c => c.members && c.members.includes(me.id) && !c.deleted);
+    if (!myChats.length) html = '<div class="empty-tip">还没有聊天<br>点「加好友」开始吧 ✨</div>';
+    else {
+      html = myChats.map(c => {
+        const last = msgs.find(m => m.chat_id === c.id);
+        let name = c.type === 'dm' ? '私聊' : c.name;
+        let av = c.type === 'dm' ? '<div class="avatar sm" style="background:linear-gradient(140deg,#5eead4,#0ea5e9)">💬</div>' : '<div class="avatar sm" style="background:linear-gradient(140deg,#818cf8,#a855f7)">👥</div>';
+        let preview = last ? (last.type === 'image' ? '[图片]' : last.content) : '开始聊天吧';
+        return `<div class="item ${activeChat?.id===c.id?'active':''}" onclick="openChat('${c.id}')">${av}<div class="item-body"><div class="item-name">${esc(name)}</div><div class="item-sub">${esc(preview.slice(0,20))}</div></div></div>`;
       }).join('');
     }
   } else {
-    const ids = store.data.friends[me.id] || [];
-    const friends = ids
-      .map(id => store.data.users.find(u => u.id === id))
-      .filter(Boolean)
-      .filter(u => !q || u.name.toLowerCase().includes(q) || u.id.includes(q));
-
-    if (!friends.length) {
-      html = `<div class="empty-tip">${q ? '没有找到好友' : '还没有好友<br>用 ID 搜索并添加吧 🔍'}</div>`;
-    } else {
-      html = friends.map(u => `
-        <div class="item" data-friend="${u.id}">
-          ${avatarHTML(u, '')}
-          <div class="item-body">
-            <div class="item-top"><span class="item-name">${esc(u.name)}</span></div>
-            <div class="item-sub">ID: ${u.id}</div>
-          </div>
-          <div class="item-actions">
-            <button class="item-del" data-del-friend="${u.id}" title="删除好友">✕</button>
-          </div>
-        </div>`).join('');
+    const { data: fr } = await supabase.from('friends').select('friend_id').eq('user_id', me.id);
+    const ids = fr.map(f => f.friend_id);
+    if (!ids.length) html = '<div class="empty-tip">还没有好友<br>用 ID 搜索并添加吧 🔍</div>';
+    else {
+      const { data: users } = await supabase.from('users').select('*').in('id', ids);
+      html = users.map(u => `<div class="item" onclick="startDM('${u.id}')">${avatarHTML(u)}<div class="item-body"><div class="item-name">${esc(u.name)}</div><div class="item-sub">ID: ${u.id}</div></div><div class="item-actions"><button class="item-del" onclick="event.stopPropagation();delFriend('${u.id}')">✕</button></div></div>`).join('');
     }
   }
-  box.innerHTML = html;
+  $('#list').innerHTML = html;
 }
 
-$('#list').addEventListener('click', e => {
-  const delBtn = e.target.closest('[data-del-friend]');
-  if (delBtn) {
-    e.stopPropagation();
-    const fid = delBtn.dataset.delFriend;
-    const f = store.data.users.find(u => u.id === fid);
-    if (!f) return;
-    if (!confirm(`确定删除好友「${f.name}」吗？\n（聊天记录也会一并删除）`)) return;
-
-    store.data.friends[me.id] = (store.data.friends[me.id] || []).filter(id => id !== fid);
-    store.data.friends[fid] = (store.data.friends[fid] || []).filter(id => id !== me.id);
-
-    const chatId = dmChatId(me.id, fid);
-    delete store.data.chats[chatId];
-    delete store.data.messages[chatId];
-
-    store.save();
-    pushDB(true).then(fetchDB);
-    if (activeChat && activeChat.id === chatId) {
-      activeChat = null;
-      renderChat();
-      document.body.classList.remove('show-chat');
-    }
-    renderList();
-    toast('已删除好友');
-    return;
-  }
-
-  const chatEl = e.target.closest('[data-chat]');
-  if (chatEl) { openChat(chatEl.dataset.chat); return; }
-  const friendEl = e.target.closest('[data-friend]');
-  if (friendEl) {
-    const chat = getOrCreateDM(me.id, friendEl.dataset.friend);
-    pushDB(true).then(fetchDB);
-    view = 'chats';
-    $$('.st').forEach(b => b.classList.toggle('active', b.dataset.view === 'chats'));
-    openChat(chat.id);
-  }
-});
-
-/* =====================================================================
-   渲染聊天
-===================================================================== */
-function renderChat() {
-  if (!activeChat) {
-    $('#chatEmpty').classList.remove('hidden');
-    $('#chatInner').classList.add('hidden');
-    return;
-  }
-  $('#chatEmpty').classList.add('hidden');
-  $('#chatInner').classList.remove('hidden');
-
-  const d = chatDisplay(activeChat);
-  const avBox = $('#chatAvatar');
-  if (activeChat.type === 'dm' && d.user) {
-    const newHTML = avatarHTML(d.user, '', 'chatAvatar');
-    avBox.outerHTML = newHTML;
-  } else {
-    avBox.outerHTML = `<div class="avatar" id="chatAvatar" style="${avatarStyle(d.name, activeChat.id)}">${d.emoji || esc(d.name[0] || '?')}</div>`;
-  }
-  $('#chatName').textContent = d.name;
-  $('#chatSub').textContent = d.sub;
-
-  $('#btnGroupSettings').classList.toggle('hidden', activeChat.type !== 'group' || activeChat.deleted);
-
+async function openChat(id) {
+  const { data: c } = await supabase.from('chats').select('*').eq('id', id).single();
+  if (!c || c.deleted) return toast('该聊天已解散');
+  activeChat = c; document.body.classList.add('show-chat');
+  $('#chatEmpty').classList.add('hidden'); $('#chatInner').classList.remove('hidden');
+  $('#chatName').textContent = c.type === 'dm' ? '私聊' : c.name;
+  $('#chatSub').textContent = c.type === 'group' ? c.members.length + ' 位成员' : '';
+  $('#btnGroupSettings').classList.toggle('hidden', c.type !== 'group');
   renderMessages();
 }
-
 function renderMessages() {
   if (!activeChat) return;
-  const box = $('#messages');
-  const msgs = store.data.messages[activeChat.id] || [];
-  const isGroup = activeChat.type === 'group';
-
-  box.innerHTML = msgs.map(m => {
-    if (m.type === 'system') return `<div class="sysmsg">${esc(m.text)}</div>`;
-    const mine = m.from === me.id;
-    const u = store.data.users.find(x => x.id === m.from);
-    const name = u ? u.name : '未知用户';
-    const isNew = !seen.has(m.id);
-    seen.add(m.id);
-
-    let bubble;
-    if (m.type === 'image') {
-      bubble = `<div class="bubble bubble-img"><img src="${esc(m.text)}" alt="图片" loading="lazy" /></div>`;
-    } else {
-      bubble = `<div class="bubble">${esc(m.text)}</div>`;
-    }
-
-    return `<div class="msg ${mine ? 'me' : ''} ${isNew ? 'enter' : ''}">
-      ${isGroup ? (u ? avatarHTML(u, 'sm') : '<div class="avatar sm">?</div>') : ''}
-      <div class="bwrap">
-        ${isGroup && !mine ? `<div class="sender">${esc(name)}</div>` : ''}
-        ${bubble}
-        <div class="btime">${fmtTime(m.ts)}</div>
-      </div>
-    </div>`;
-  }).join('');
-
-  requestAnimationFrame(() => { box.scrollTop = box.scrollHeight; });
-}
-
-/* =====================================================================
-   发送消息
-===================================================================== */
-function sendMessage() {
-  if (!activeChat || activeChat.deleted) return;
-  const input = $('#msgInput');
-  const text = input.value.trim();
-  if (!text) return;
-
-  store.data.messages[activeChat.id] = store.data.messages[activeChat.id] || [];
-  store.data.messages[activeChat.id].push({
-    id: uid(), from: me.id, type: 'text', text, ts: Date.now(),
+  supabase.from('messages').select('*').eq('chat_id', activeChat.id).order('created_at').then(({data: msgs}) => {
+    $('#messages').innerHTML = msgs.map(m => {
+      const mine = m.sender === me.id;
+      let content = m.type === 'image' ? `<div class="bubble bubble-img"><img src="${esc(m.content)}"></div>` : `<div class="bubble">${esc(m.content)}</div>`;
+      return `<div class="msg ${mine?'me':''}"><div class="bwrap">${content}<div style="font-size:10.5px;color:var(--text-dim);margin-top:4px">${fmtTime(m.created_at)}</div></div></div>`;
+    }).join('');
+    $('#messages').scrollTop = $('#messages').scrollHeight;
   });
-  store.save();
-  pushDB(true);
+}
+$('#btnSend').onclick = async () => {
+  const text = $('#msgInput').value.trim(); if (!text || !activeChat) return;
+  await supabase.from('messages').insert({ id: uid(), chat_id: activeChat.id, sender: me.id, type: 'text', content: text, created_at: Date.now() });
+  $('#msgInput').value = ''; renderMessages();
+};
+$('#msgInput').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('#btnSend').click(); } };
+$('#btnImage').onclick = () => { if(activeChat) $('#imageInput').click(); };
+$('#imageInput').onchange = e => {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async ev => {
+    const canvas = document.createElement('canvas'); const img = new Image();
+    img.onload = async () => {
+      const ratio = Math.min(1200/img.width, 1200/img.height, 1);
+      canvas.width = img.width * ratio; canvas.height = img.height * ratio;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      const data = canvas.toDataURL('image/jpeg', 0.75);
+      await supabase.from('messages').insert({ id: uid(), chat_id: activeChat.id, sender: me.id, type: 'image', content: data, created_at: Date.now() });
+      renderMessages();
+    }; img.src = ev.target.result;
+  }; reader.readAsDataURL(file);
+};
 
-  input.value = '';
-  input.style.height = 'auto';
-  renderMessages();
+async function startDM(fid) {
+  const ids = [me.id, fid].sort(); const dmId = 'dm_' + ids.join('_');
+  const { data: exist } = await supabase.from('chats').select('*').eq('id', dmId).single();
+  if (!exist) await supabase.from('chats').insert({ id: dmId, type: 'dm', members: ids, created_at: Date.now(), owner: '', name: '' });
+  openChat(dmId);
+}
+async function delFriend(fid) {
+  if (!confirm('确定删除该好友吗？')) return;
+  await supabase.from('friends').delete().eq('user_id', me.id).eq('friend_id', fid);
+  await supabase.from('friends').delete().eq('user_id', fid).eq('friend_id', me.id);
   renderList();
-  input.focus();
 }
-$('#btnSend').onclick = sendMessage;
-$('#msgInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
-    e.preventDefault();
-    sendMessage();
-  }
-});
-$('#msgInput').addEventListener('input', e => {
-  const el = e.target;
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 150) + 'px';
-});
-
-/* =====================================================================
-   发送图片
-===================================================================== */
-function compressImage(file, maxSize = 1200, quality = 0.75) {
-  return new Promise(resolve => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        let { width, height } = img;
-        if (width > maxSize || height > maxSize) {
-          const ratio = Math.min(maxSize / width, maxSize / height);
-          width = Math.round(width * ratio);
-          height = Math.round(height * ratio);
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', quality));
-      };
-      img.onerror = () => resolve(reader.result);
-      img.src = reader.result;
+$('#btnAddFriend').onclick = () => {
+  openModal('<div class="modal-head"><h3>添加好友</h3><button class="icon-btn" data-close>✕</button></div><div class="modal-body"><div class="field"><label>输入对方 ID</label><input id="fId" maxlength="6"></div><button class="primary-btn" id="doAdd">加好友</button></div>', md => {
+    md.querySelector('#doAdd').onclick = async () => {
+      const id = md.querySelector('#fId').value.trim();
+      if (id === me.id) return toast('不能加自己');
+      const { data: u } = await supabase.from('users').select('*').eq('id', id).single();
+      if (!u) return toast('用户不存在');
+      await supabase.from('friends').insert([{ user_id: me.id, friend_id: id }, { user_id: id, friend_id: me.id }]);
+      toast('已添加 ' + u.name); closeModal(); renderList();
     };
-    reader.readAsDataURL(file);
   });
-}
-
-$('#btnImage').onclick = () => {
-  if (!activeChat || activeChat.deleted) return toast('请先打开一个聊天');
-  $('#imageInput').click();
 };
-$('#imageInput').onchange = async e => {
-  const file = e.target.files && e.target.files[0];
-  e.target.value = '';
-  if (!file) return;
-  if (!activeChat || activeChat.deleted) return toast('请先打开一个聊天');
-  if (file.size > 5 * 1024 * 1024) return toast('原图请小于 5MB');
-
-  toast('图片处理中…');
-  try {
-    const dataURL = await compressImage(file, 1200, 0.75);
-    store.data.messages[activeChat.id] = store.data.messages[activeChat.id] || [];
-    store.data.messages[activeChat.id].push({
-      id: uid(), from: me.id, type: 'image', text: dataURL, ts: Date.now(),
+$('#btnNewGroup').onclick = () => {
+  supabase.from('friends').select('friend_id').eq('user_id', me.id).then(async ({data: fr}) => {
+    const ids = fr.map(f => f.friend_id);
+    const { data: users } = await supabase.from('users').select('*').in('id', ids);
+    openModal(`<div class="modal-head"><h3>创建群聊</h3><button class="icon-btn" data-close>✕</button></div><div class="modal-body"><div class="field"><label>群名称</label><input id="gName"></div><div class="field"><label>选择成员</label>${users.map(u=>`<label class="pick"><input type="checkbox" value="${u.id}">${avatarHTML(u,'sm')} ${u.name}</label>`).join('')}</div><button class="primary-btn" id="doCreate">创建群聊</button></div>`, md => {
+      md.querySelector('#doCreate').onclick = async () => {
+        const name = md.querySelector('#gName').value.trim();
+        const members = [me.id, ...[...md.querySelectorAll('input:checked')].map(i=>i.value)];
+        if (!name || members.length < 2) return toast('请填写群名并选择成员');
+        await supabase.from('chats').insert({ id: 'g_' + uid(), type: 'group', name, owner: me.id, members, deleted: false, created_at: Date.now() });
+        closeModal(); renderList(); toast('群聊已创建');
+      };
     });
-    store.save();
-    pushDB(true);
-    renderMessages();
-    renderList();
-    toast('图片已发送');
-  } catch (err) {
-    toast('图片发送失败');
-  }
+  });
 };
-
-/* =====================================================================
-   弹窗
-===================================================================== */
-function openModal(html, onMount) {
-  const ov = $('#overlay'), md = $('#modal');
-  md.innerHTML = html;
-  ov.classList.remove('hidden');
-  requestAnimationFrame(() => ov.classList.add('show'));
-  md.querySelectorAll('[data-close]').forEach(b => { b.onclick = closeModal; });
-  onMount && onMount(md);
-}
-function closeModal() {
-  const ov = $('#overlay');
-  ov.classList.remove('show');
-  setTimeout(() => ov.classList.add('hidden'), 240);
-}
-$('#overlay').addEventListener('click', e => { if (e.target === $('#overlay')) closeModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-
-/* =====================================================================
-   个人中心
-===================================================================== */
-function openProfile() {
-  openModal(`
-    <div class="modal-head"><h3>个人中心</h3><button class="icon-btn" data-close>✕</button></div>
-    <div class="modal-body">
-      <div class="field" style="text-align:center">
-        <div id="profileAvatarPreview" style="margin:0 auto 12px;display:flex;justify-content:center">
-          ${avatarHTML(me, 'lg')}
-        </div>
-        <input type="file" id="avatarFile" accept="image/*" style="padding:9px;font-size:13px" />
-        <div style="height:8px"></div>
-        <button class="ghost-btn" id="clearAvatarBtn" style="width:100%">清除头像</button>
-      </div>
-      <div class="field">
-        <label>昵称</label>
-        <input id="profileName" maxlength="12" value="${esc(me.name)}" />
-      </div>
-      <div class="field">
-        <label>账号 ID</label>
-        <input value="${me.id}" readonly style="opacity:.6" />
-      </div>
-      <div style="height:4px"></div>
-      <button class="primary-btn" id="saveProfile">保存修改</button>
-    </div>
-  `, md => {
-    const fileInput = md.querySelector('#avatarFile');
-    const preview = md.querySelector('#profileAvatarPreview');
-    let newAvatar = me.avatar || '';
-
-    fileInput.onchange = e => {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      if (file.size > 1.5 * 1024 * 1024) return toast('头像请小于 1.5MB');
-      const reader = new FileReader();
-      reader.onload = () => {
-        newAvatar = reader.result;
-        preview.innerHTML = `<div class="avatar lg"><img src="${newAvatar}" alt="" /></div>`;
-      };
-      reader.readAsDataURL(file);
-    };
-
-    md.querySelector('#clearAvatarBtn').onclick = () => {
-      newAvatar = '';
-      fileInput.value = '';
-      const currentName = md.querySelector('#profileName').value.trim() || me.name;
-      preview.innerHTML = avatarHTML({ name: currentName, id: me.id }, 'lg');
-    };
-
-    md.querySelector('#saveProfile').onclick = () => {
-      const newName = md.querySelector('#profileName').value.trim();
-      if (!newName) return toast('昵称不能为空');
-      if (newName.length > 12) return toast('昵称最多 12 个字');
-
-      const u = store.data.users.find(x => x.id === me.id);
-      if (!u) return;
-      u.name = newName;
-      u.avatar = newAvatar;
-      store.save();
-      pushDB(true).then(fetchDB);
-      me = u;
-      refreshMyProfile();
-      closeModal();
-      toast('资料已更新 · 刷新成功');
-    };
-  });
-}
-$('#btnProfile').onclick = openProfile;
-$('#myAvatar').addEventListener('click', openProfile);
-
-/* =====================================================================
-   加好友
-===================================================================== */
-function openAddFriend() {
-  openModal(`
-    <div class="modal-head"><h3>添加好友</h3><button class="icon-btn" data-close>✕</button></div>
-    <div class="modal-body">
-      <div class="field">
-        <label>输入对方的 6 位账号 ID</label>
-        <input id="searchId" inputmode="numeric" maxlength="6" placeholder="例如 000001" />
-      </div>
-      <button class="primary-btn" id="doSearch">搜索</button>
-      <div id="searchResult"></div>
-    </div>
-  `, md => {
-    const input = md.querySelector('#searchId');
-    const result = md.querySelector('#searchResult');
-    setTimeout(() => input.focus(), 80);
-
-    async function doSearch() {
-      const id = input.value.trim();
-      if (!id) { result.innerHTML = ''; return; }
-      if (id === me.id) {
-        result.innerHTML = `<div class="empty-tip" style="padding:18px 6px">这是你自己的 ID 😄</div>`;
-        return;
-      }
-      await fetchDB();
-      const u = store.data.users.find(x => x.id === id);
-      if (!u) {
-        result.innerHTML = `<div class="empty-tip" style="padding:18px 6px">没有找到这个 ID 的用户</div>`;
-        return;
-      }
-      const isFriend = (store.data.friends[me.id] || []).includes(u.id);
-      result.innerHTML = `
-        <div class="result-card">
-          ${avatarHTML(u, '')}
-          <div class="grow">
-            <div class="rn">${esc(u.name)}</div>
-            <div class="ri">ID: ${u.id}</div>
-          </div>
-          ${isFriend
-            ? `<button class="ghost-btn" id="goChat">聊天</button>`
-            : `<button class="ghost-btn" id="addBtn" style="background:rgba(var(--accent-rgb),.22);border-color:rgba(var(--accent-rgb),.5)">加好友</button>`}
-        </div>`;
-
-      if (isFriend) {
-        result.querySelector('#goChat').onclick = () => {
-          const chat = getOrCreateDM(me.id, u.id);
-          pushDB(true).then(fetchDB);
-          closeModal();
-          view = 'chats';
-          $$('.st').forEach(b => b.classList.toggle('active', b.dataset.view === 'chats'));
-          openChat(chat.id);
-        };
-      } else {
-        result.querySelector('#addBtn').onclick = () => {
-          store.data.friends[me.id] = store.data.friends[me.id] || [];
-          store.data.friends[u.id] = store.data.friends[u.id] || [];
-          if (!store.data.friends[me.id].includes(u.id)) store.data.friends[me.id].push(u.id);
-          if (!store.data.friends[u.id].includes(me.id)) store.data.friends[u.id].push(me.id);
-          store.save();
-          pushDB(true).then(fetchDB);
-          toast('已添加 ' + u.name + ' 为好友');
-          renderList();
-          doSearch();
-        };
-      }
-    }
-    md.querySelector('#doSearch').onclick = doSearch;
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
-    input.addEventListener('input', () => { if (input.value.length === 6) doSearch(); });
-  });
-}
-
-/* =====================================================================
-   建群
-===================================================================== */
-function openNewGroup() {
-  const fids = store.data.friends[me.id] || [];
-  const friends = fids.map(id => store.data.users.find(u => u.id === id)).filter(Boolean);
-
-  openModal(`
-    <div class="modal-head"><h3>创建群聊</h3><button class="icon-btn" data-close>✕</button></div>
-    <div class="modal-body">
-      <div class="field">
-        <label>群名称</label>
-        <input id="grpName" maxlength="18" placeholder="给群起个名字" />
-      </div>
-      <div class="field">
-        <label>选择成员</label>
-        <div class="pick-list">
-          ${friends.length ? friends.map(f => `
-            <label class="pick">
-              <input type="checkbox" value="${f.id}" />
-              ${avatarHTML(f, 'sm')}
-              <span>${esc(f.name)}</span>
-              <span class="muted">${f.id}</span>
-            </label>`).join('')
-          : '<div class="empty-tip" style="padding:22px">还没有好友，先去加好友吧</div>'}
-        </div>
-      </div>
-      <button class="primary-btn" id="doCreateGroup">创建群聊</button>
-    </div>
-  `, md => {
-    md.querySelector('#doCreateGroup').onclick = () => {
-      const name = md.querySelector('#grpName').value.trim();
-      const picked = [...md.querySelectorAll('.pick input:checked')].map(i => i.value);
-      if (!name) return toast('请输入群名称');
-      if (!picked.length) return toast('请至少选择一位成员');
-
-      const id = 'g_' + uid();
-      store.data.chats[id] = {
-        id, type: 'group', name,
-        members: [me.id, ...picked],
-        owner: me.id,
-        createdAt: Date.now(),
-      };
-      store.data.messages[id] = [{
-        id: uid(), from: 'system', type: 'system',
-        text: `群聊「${name}」已创建`, ts: Date.now(),
-      }];
-      store.save();
-      pushDB(true).then(fetchDB);
-      closeModal();
-      view = 'chats';
-      $$('.st').forEach(b => b.classList.toggle('active', b.dataset.view === 'chats'));
-      openChat(id);
-      toast('群聊创建成功');
-    };
-  });
-}
-
-/* =====================================================================
-   群设置（踢人 / 退出 / 解散）
-===================================================================== */
-function openGroupSettings() {
-  if (!activeChat || activeChat.type !== 'group' || activeChat.deleted) return;
+$('#btnGroupSettings').onclick = () => {
+  if (!activeChat || activeChat.type !== 'group') return;
   const isOwner = activeChat.owner === me.id;
-  const members = activeChat.members
-    .map(id => store.data.users.find(u => u.id === id))
-    .filter(Boolean);
-
-  openModal(`
-    <div class="modal-head"><h3>群设置 · ${esc(activeChat.name)}</h3><button class="icon-btn" data-close>✕</button></div>
-    <div class="modal-body">
-      <div class="field">
-        <label>群成员 (${members.length})</label>
-        <div class="pick-list" style="max-height:300px">
-          ${members.map(u => {
-            const isMe = u.id === me.id;
-            const isGroupOwner = u.id === activeChat.owner;
-            return `
-              <div class="pick" style="cursor:default">
-                ${avatarHTML(u, 'sm')}
-                <span>${esc(u.name)}${isMe ? ' (我)' : ''}${isGroupOwner ? ' 👑' : ''}</span>
-                <span class="muted">${u.id}</span>
-                ${isOwner && !isMe ? `<button class="item-del" data-kick="${u.id}" style="margin-left:6px;flex:0 0 auto" title="踢出群聊">踢</button>` : ''}
-              </div>`;
-          }).join('')}
-        </div>
-      </div>
-      ${isOwner ? `
-        <div style="height:8px"></div>
-        <button class="danger-btn" id="dissolveGroup" style="width:100%">解散群聊</button>
-      ` : `
-        <div style="height:8px"></div>
-        <button class="danger-btn" id="exitGroup" style="width:100%">退出群聊</button>
-      `}
-      <div style="height:8px"></div>
-      <button class="primary-btn" data-close>关闭</button>
-    </div>
-  `, md => {
-    // 踢人
-    md.querySelectorAll('[data-kick]').forEach(btn => {
-      btn.onclick = () => {
-        const kid = btn.dataset.kick;
-        const u = store.data.users.find(x => x.id === kid);
-        if (!u) return;
-        if (!confirm(`确定将「${u.name}」踢出群聊吗？`)) return;
-
-        activeChat.members = activeChat.members.filter(id => id !== kid);
-        const chatId = activeChat.id;
-        store.data.messages[chatId].push({
-          id: uid(), from: 'system', type: 'system',
-          text: `${u.name} 被移出了群聊`, ts: Date.now(),
-        });
-        store.save();
-        pushDB(true).then(fetchDB);
-        renderChat();
-        renderList();
-        closeModal();
-        toast('已踢出 ' + u.name);
+  supabase.from('users').select('*').in('id', activeChat.members).then(({data: us}) => {
+    openModal(`<div class="modal-head"><h3>群设置</h3><button class="icon-btn" data-close>✕</button></div><div class="modal-body"><div class="field"><label>群成员</label>${us.map(u=>`<div class="pick" style="cursor:default">${avatarHTML(u,'sm')} ${u.name} ${u.id===activeChat.owner?'👑':''} ${isOwner&&u.id!==me.id?`<button class="item-del" onclick="kick('${u.id}')">踢</button>`:''}</div>`).join('')}</div>${isOwner ? `<button class="danger-btn" id="doDissolve" style="width:100%">解散群聊</button>` : `<button class="danger-btn" id="doExit" style="width:100%">退出群聊</button>`}<div style="height:8px"></div><button class="primary-btn" data-close>关闭</button></div>`, md => {
+      if (isOwner) md.querySelector('#doDissolve').onclick = async () => {
+        if (!confirm('确定解散？')) return;
+        await supabase.from('chats').update({ deleted: true, members: [] }).eq('id', activeChat.id);
+        activeChat = null; document.body.classList.remove('show-chat'); closeModal(); renderList(); toast('已解散');
+      };
+      else md.querySelector('#doExit').onclick = async () => {
+        if (!confirm('确定退出？')) return;
+        const newM = activeChat.members.filter(id => id !== me.id);
+        await supabase.from('chats').update({ members: newM }).eq('id', activeChat.id);
+        activeChat = null; document.body.classList.remove('show-chat'); closeModal(); renderList(); toast('已退出');
       };
     });
-
-    // 解散群聊（群主）
-    const dissolveBtn = md.querySelector('#dissolveGroup');
-    if (dissolveBtn) {
-      dissolveBtn.onclick = () => {
-        if (!confirm(`确定解散群聊「${activeChat.name}」吗？\n（所有成员将被移出，聊天记录将被删除）`)) return;
-        const chatId = activeChat.id;
-        store.data.chats[chatId].deleted = true;
-        store.data.chats[chatId].members = [];
-        store.data.messages[chatId] = []; // 本地清空消息
-        store.data.messages[chatId].push({
-          id: uid(), from: 'system', type: 'system',
-          text: `群聊已被群主解散`, ts: Date.now(),
-        });
-        store.save();
-        pushDB(true).then(fetchDB);
-        activeChat = null;
-        document.body.classList.remove('show-chat');
-        renderChat();
-        renderList();
-        closeModal();
-        toast('群聊已解散');
-      };
-    }
-
-    // 退出群聊（非群主）
-    const exitBtn = md.querySelector('#exitGroup');
-    if (exitBtn) {
-      exitBtn.onclick = () => {
-        if (!confirm(`确定退出群聊「${activeChat.name}」吗？`)) return;
-        const chatId = activeChat.id;
-        if (!store.data.chats[chatId]) return;
-        store.data.chats[chatId].members = store.data.chats[chatId].members.filter(id => id !== me.id);
-        store.data.messages[chatId].push({
-          id: uid(), from: 'system', type: 'system',
-          text: `${me.name} 退出了群聊`, ts: Date.now(),
-        });
-        if (store.data.chats[chatId].members.length === 0) {
-            store.data.chats[chatId].deleted = true;
-        }
-        store.save();
-        pushDB(true).then(fetchDB);
-        activeChat = null;
-        document.body.classList.remove('show-chat');
-        renderChat();
-        renderList();
-        closeModal();
-        toast('已退出群聊');
-      };
-    }
   });
-}
-$('#btnGroupSettings').onclick = openGroupSettings;
-
-/* =====================================================================
-   个性化设置
-===================================================================== */
-function openSettings() {
-  const s = store.settings;
-  const accent = s.accent || (THEMES[s.theme] || THEMES.aurora).accent;
-
-  openModal(`
-    <div class="modal-head"><h3>个性化设置</h3><button class="icon-btn" data-close>✕</button></div>
-    <div class="modal-body">
-      <div class="field">
-        <label>主题</label>
-        <div class="theme-grid" id="themeGrid">
-          ${Object.entries(THEMES).map(([k, t]) => `
-            <button class="theme-chip ${s.theme === k ? 'on' : ''}" data-theme="${k}">
-              <span class="swatch" style="background:linear-gradient(135deg,${t.bg[0]},${t.bg[1]},${t.blobs[0]})"></span>
-              ${t.name}
-            </button>`).join('')}
-        </div>
-      </div>
-      <div class="field">
-        <label>强调色</label>
-        <div style="display:flex;gap:9px;align-items:center">
-          <input type="color" id="setAccent" value="${accent}" style="flex:1" />
-          <button class="ghost-btn" id="resetAccent" style="flex:0 0 auto">跟随主题</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>玻璃模糊强度 · <span id="vBlur">${s.blur}px</span></label>
-        <input type="range" id="setBlur" min="0" max="60" value="${s.blur}" />
-      </div>
-      <div class="field">
-        <label>玻璃通透度 · <span id="vAlpha">${Math.round(s.alpha * 100)}%</span></label>
-        <input type="range" id="setAlpha" min="0" max="40" value="${Math.round(s.alpha * 100)}" />
-      </div>
-      <div class="field">
-        <label>自定义背景</label>
-        <input type="file" id="setBgFile" accept="image/*" style="padding:9px;font-size:13px" />
-        <div style="height:9px"></div>
-        <input type="text" id="setBgUrl" placeholder="或粘贴图片链接 https://…"
-               value="${s.bgImage && !s.bgImage.startsWith('data:') ? esc(s.bgImage) : ''}" />
-        <div style="height:9px"></div>
-        <button class="ghost-btn" id="clearBg" style="width:100%">清除背景图片</button>
-      </div>
-      <div style="height:4px"></div>
-      <button class="primary-btn" data-close>完成</button>
-    </div>
-  `, md => {
-    const update = patch => { store.setSettings(patch); applySettings(); };
-    md.querySelectorAll('.theme-chip').forEach(btn => {
-      btn.onclick = () => {
-        md.querySelectorAll('.theme-chip').forEach(b => b.classList.remove('on'));
-        btn.classList.add('on');
-        const patch = { theme: btn.dataset.theme };
-        if (!store.settings.accent) patch.accent = '';
-        update(patch);
-        md.querySelector('#setAccent').value = store.settings.accent || THEMES[btn.dataset.theme].accent;
-      };
-    });
-    md.querySelector('#setAccent').oninput = e => update({ accent: e.target.value });
-    md.querySelector('#resetAccent').onclick = () => {
-      md.querySelector('#setAccent').value = (THEMES[store.settings.theme] || THEMES.aurora).accent;
-      update({ accent: '' });
-    };
-    md.querySelector('#setBlur').oninput = e => {
-      md.querySelector('#vBlur').textContent = e.target.value + 'px';
-      update({ blur: Number(e.target.value) });
-    };
-    md.querySelector('#setAlpha').oninput = e => {
-      md.querySelector('#vAlpha').textContent = e.target.value + '%';
-      update({ alpha: Number(e.target.value) / 100 });
-    };
-    md.querySelector('#setBgFile').onchange = e => {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      if (file.size > 2.5 * 1024 * 1024) return toast('图片请小于 2.5MB');
-      const reader = new FileReader();
-      reader.onload = () => { update({ bgImage: reader.result }); toast('背景已更新'); };
-      reader.readAsDataURL(file);
-    };
-    md.querySelector('#setBgUrl').addEventListener('change', e => {
-      const url = e.target.value.trim();
-      if (url) { update({ bgImage: url }); toast('背景已更新'); }
-    });
-    md.querySelector('#clearBg').onclick = () => {
-      md.querySelector('#setBgFile').value = '';
-      md.querySelector('#setBgUrl').value = '';
-      update({ bgImage: '' });
-      toast('背景已清除');
+};
+window.kick = async (id) => { if(!confirm('确定踢出？')) return; const nm = activeChat.members.filter(i=>i!==id); await supabase.from('chats').update({members: nm}).eq('id', activeChat.id); renderMessages(); toast('已踢出'); };
+function openProfile() {
+  openModal(`<div class="modal-head"><h3>个人中心</h3><button class="icon-btn" data-close>✕</button></div><div class="modal-body"><div class="field" style="text-align:center"><div id="prev" style="display:flex;justify-content:center">${avatarHTML(me,'lg')}</div><input type="file" id="avFile" accept="image/*" style="margin-top:10px"></div><div class="field"><label>昵称</label><input id="pName" value="${esc(me.name)}"></div><button class="primary-btn" id="doSave">保存修改</button></div>`, md => {
+    let newAv = me.avatar;
+    md.querySelector('#avFile').onchange = e => { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = ev => { newAv = ev.target.result; md.querySelector('#prev').innerHTML = `<div class="avatar lg"><img src="${newAv}"></div>`; }; r.readAsDataURL(f); };
+    md.querySelector('#doSave').onclick = async () => {
+      const name = md.querySelector('#pName').value.trim(); if(!name) return toast('昵称不能为空');
+      await supabase.from('users').update({ name, avatar: newAv }).eq('id', me.id);
+      me.name = name; me.avatar = newAv; refreshProfile(); closeModal(); toast('资料已更新');
     };
   });
 }
-
-/* =====================================================================
-   其他交互
-===================================================================== */
-$('#btnSettings').onclick = openSettings;
-$('#btnAddFriend').onclick = openAddFriend;
-$('#btnNewGroup').onclick = openNewGroup;
+$('#btnProfile').onclick = () => openProfile();
+function openModal(html, onMount){ const ov=$('#overlay'); $('#modal').innerHTML=html; ov.classList.remove('hidden'); requestAnimationFrame(()=>ov.classList.add('show')); $('#modal').querySelectorAll('[data-close]').forEach(b=>b.onclick=closeModal); onMount && onMount($('#modal')); }
+function closeModal(){ $('#overlay').classList.remove('show'); setTimeout(()=>$('#overlay').classList.add('hidden'),240); }
+$('#overlay').onclick = e => { if(e.target===$('#overlay')) closeModal(); };
 $('#btnBack').onclick = () => document.body.classList.remove('show-chat');
-
-$('#btnLogout').onclick = () => {
-  localStorage.removeItem(store.SESSION);
-  me = null; activeChat = null;
-  document.body.classList.remove('show-chat');
-  showAuth();
-  setAuthMode('login');
-  $('#loginId').value = '';
-  $('#authPwd').value = '';
-  toast('已退出登录');
-};
-$('#myId').onclick = () => {
-  navigator.clipboard?.writeText(me.id)
-    .then(() => toast('ID 已复制：' + me.id))
-    .catch(() => toast('你的 ID：' + me.id));
-};
-$$('.st').forEach(b => {
-  b.onclick = () => {
-    view = b.dataset.view;
-    $$('.st').forEach(x => x.classList.toggle('active', x === b));
-    renderList();
-  };
-});
-$('#searchInput').addEventListener('input', e => { searchTerm = e.target.value; renderList(); });
-
-let rafPending = false;
-document.addEventListener('pointermove', e => {
-  if (rafPending) return;
-  rafPending = true;
-  requestAnimationFrame(() => {
-    rafPending = false;
-    const el = document.elementFromPoint(e.clientX, e.clientY);
-    const glass = el && el.closest ? el.closest('.glass') : null;
-    if (!glass) return;
-    const r = glass.getBoundingClientRect();
-    glass.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
-    glass.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
-  });
-}, { passive: true });
-
-/* =====================================================================
-   启动
-===================================================================== */
-(async function boot() {
-  store.load();
-  applySettings();
-
-  const head = document.querySelector('.side-head');
-  if (head && !document.getElementById('connDot')) {
-    connDot = document.createElement('span');
-    connDot.id = 'connDot';
-    connDot.style.cssText = 'width:8px;height:8px;border-radius:50%;background:#666;flex:0 0 auto;transition:.3s';
-    connDot.title = '连接状态';
-    head.insertBefore(connDot, head.querySelector('#btnProfile'));
-  }
-
-  if (API_ON) {
-    await pushDB(true);
-    startPolling();
-  }
-
-  const sid = localStorage.getItem(store.SESSION);
-  if (sid) {
-    const u = store.data.users.find(x => x.id === sid);
-    if (u) { me = u; showMain(); return; }
-  }
-  showAuth();
-  setAuthMode('login');
-})();
+$('#btnLogout').onclick = () => { localStorage.removeItem('chat_uid'); location.reload(); };
+$$('.st').forEach(b=>b.onclick=()=>{ view=b.dataset.view; $$('.st').forEach(x=>x.classList.toggle('active',x===b)); renderList(); });
+$('#searchInput').oninput = e => { searchTerm = e.target.value; renderList(); };
+boot();
 </script>
 </body>
 </html>
