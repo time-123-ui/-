@@ -5,60 +5,162 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Liquid Chat · 液态玻璃聊天室</title>
 <style>
-*,*::before,*::after{box-sizing:border-box}
-html,body{height:100%}
-:root{--accent:#5eead4;--accent-rgb:94,234,212;--text:#eef2ff;--text-dim:rgba(238,242,255,.52);--glass:rgba(255,255,255,.065);--stroke:rgba(255,255,255,.14);--blur:26px;--radius:24px;}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;color:var(--text);background:#05060b;overflow:hidden;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
-::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:99px}
-.bg{position:fixed;inset:0;z-index:0;overflow:hidden}.bg .blob{position:absolute;width:56vmax;height:56vmax;border-radius:50%;filter:blur(95px);opacity:.55;mix-blend-mode:screen;animation:fl 25s ease-in-out infinite}
-.b1{top:-20vmax;left:-16vmax;background:#5eead4}.b2{bottom:-26vmax;right:-18vmax;background:#818cf8;animation-delay:-5s}.b3{top:30%;left:50%;width:40vmax;height:40vmax;background:#f472b6;animation-delay:-10s}
+*,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow-x:hidden}
+:root{
+  --accent:#5eead4;--accent-rgb:94,234,212;--text:#eef2ff;
+  --text-dim:rgba(238,242,255,.52);--glass:rgba(255,255,255,.065);--stroke:rgba(255,255,255,.14);
+  --blur:26px;--radius:24px;
+  --ease-bounce:cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth:cubic-bezier(0.19, 1, 0.22, 1);
+}
+body{
+  margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  color:var(--text);background:#05060b;overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:99px}
+
+/* ===== 背景动画 ===== */
+.bg{position:fixed;inset:0;z-index:0;overflow:hidden;transition:background .9s ease}
+.bg .blob{position:absolute;width:56vmax;height:56vmax;border-radius:50%;filter:blur(95px);opacity:.55;mix-blend-mode:screen;will-change:transform;animation:fl 25s ease-in-out infinite}
+.b1{top:-20vmax;left:-16vmax;background:#5eead4}
+.b2{bottom:-26vmax;right:-18vmax;background:#818cf8;animation-delay:-5s}
+.b3{top:30%;left:50%;width:40vmax;height:40vmax;background:#f472b6;animation-delay:-10s}
 @keyframes fl{50%{transform:translate3d(10vmax,10vmax,0) scale(1.2)}}
-.glass{position:relative;background:var(--glass);backdrop-filter:blur(var(--blur)) saturate(185%);border:1px solid var(--stroke);border-radius:var(--radius);box-shadow:0 24px 70px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.24)}
+
+/* ===== 玻璃态和卡片 ===== */
+.glass{position:relative;background:var(--glass);backdrop-filter:blur(var(--blur)) saturate(185%);-webkit-backdrop-filter:blur(var(--blur)) saturate(185%);border:1px solid var(--stroke);border-radius:var(--radius);box-shadow:0 24px 70px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.24);isolation:isolate}
 .glass::before{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(120% 90% at 100% 0%,rgba(var(--accent-rgb),.14),transparent 58%),linear-gradient(142deg,rgba(255,255,255,.17),transparent 46%);mix-blend-mode:screen;pointer-events:none}
+.glass>*{position:relative;z-index:1}
+
+/* ===== 控件回弹 ===== */
 button,input,textarea{font-family:inherit;color:inherit;outline:none;border:none;background:none}
-button{cursor:pointer}
-input,textarea{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px;color:var(--text);font-size:14.5px;transition:.22s;width:100%}
-input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);box-shadow:0 0 0 4px rgba(var(--accent-rgb),.13)}
-.primary-btn{width:100%;padding:13px;border-radius:15px;background:linear-gradient(135deg,rgba(var(--accent-rgb),.95),rgba(var(--accent-rgb),.62));color:#04141a;font-weight:700;font-size:15px;box-shadow:0 10px 30px rgba(var(--accent-rgb),.28)}
-.ghost-btn{padding:10px 16px;border-radius:13px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
-.danger-btn{background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.5);color:#fca5a5}
-.icon-btn{width:38px;height:38px;flex:0 0 auto;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);font-size:15px}
+button{cursor:pointer;transition:transform .2s var(--ease-bounce),opacity .2s}
+button:active{transform:scale(.95)}
+input,textarea{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px;color:var(--text);font-size:14.5px;transition:border-color .22s,box-shadow .22s,background .22s;width:100%}
+input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);background:rgba(255,255,255,.085);box-shadow:0 0 0 4px rgba(var(--accent-rgb),.13)}
+
+/* ===== 按钮 ===== */
+.primary-btn{width:100%;padding:13px;border-radius:15px;background:linear-gradient(135deg,rgba(var(--accent-rgb),.95),rgba(var(--accent-rgb),.62));color:#04141a;font-weight:700;font-size:15px;box-shadow:0 10px 30px rgba(var(--accent-rgb),.28);transition:transform .2s var(--ease-bounce),box-shadow .2s}
+.primary-btn:hover{box-shadow:0 16px 40px rgba(var(--accent-rgb),.42)}
+.ghost-btn{padding:10px 16px;border-radius:13px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);transition:background .2s,transform .2s var(--ease-bounce)}
+.ghost-btn:hover{background:rgba(255,255,255,.13)}
+.danger-btn{background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.5);color:#fca5a5;transition:background .2s,transform .2s var(--ease-bounce)}
+.danger-btn:hover{background:rgba(239,68,68,.35)}
+.icon-btn{width:38px;height:38px;flex:0 0 auto;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);font-size:15px;transition:background .2s,transform .2s var(--ease-bounce)}
+.icon-btn:hover{background:rgba(255,255,255,.15)}
 .hidden{display:none!important}
-.avatar{width:46px;height:46px;flex:0 0 auto;border-radius:15px;display:grid;place-items:center;font-weight:800;font-size:17px;color:#06141b;overflow:hidden;background:linear-gradient(140deg,#5eead4,#0ea5e9);box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
+
+/* ===== 头像 ===== */
+.avatar{width:46px;height:46px;flex:0 0 auto;border-radius:15px;display:grid;place-items:center;font-weight:800;font-size:17px;color:#06141b;overflow:hidden;background:linear-gradient(140deg,#5eead4,#0ea5e9);box-shadow:inset 0 1px 0 rgba(255,255,255,.5);transition:transform .2s var(--ease-bounce)}
 .avatar.sm{width:36px;height:36px;border-radius:12px;font-size:14px}
 .avatar.lg{width:60px;height:60px;border-radius:19px;font-size:22px}
 .avatar img{width:100%;height:100%;object-fit:cover;display:block}
-.screen{position:fixed;inset:0;z-index:1;display:flex}.screen.center{align-items:center;justify-content:center;padding:22px}
-.auth-card{width:min(440px,100%);padding:40px;animation:cardIn .6s cubic-bezier(.19,1,.22,1)}
-@keyframes cardIn{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
-.brand{text-align:center;margin-bottom:26px}.brand-logo{width:74px;height:74px;margin:0 auto 16px;border-radius:24px;display:grid;place-items:center;font-size:36px;background:linear-gradient(140deg,rgba(var(--accent-rgb),.45),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.22)}
-.brand h1{margin:0;font-size:27px}.brand p{margin:7px 0 0;font-size:13px;color:var(--text-dim)}
+.avatar:hover{transform:scale(1.05)}
+
+/* ===== 登录/注册 ===== */
+.screen{position:fixed;inset:0;z-index:1;display:flex}
+.screen.center{align-items:center;justify-content:center;padding:22px}
+.auth-card{width:min(440px,100%);padding:40px;animation:cardIn .65s var(--ease-bounce)}
+@keyframes cardIn{from{opacity:0;transform:translateY(26px) scale(.96)}to{opacity:1;transform:none}}
+.brand{text-align:center;margin-bottom:26px}
+.brand-logo{width:74px;height:74px;margin:0 auto 16px;border-radius:24px;display:grid;place-items:center;font-size:36px;background:linear-gradient(140deg,rgba(var(--accent-rgb),.45),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.22);box-shadow:0 18px 50px rgba(var(--accent-rgb),.3);animation:bob 5s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px) rotate(-3deg)}}
+.brand h1{margin:0;font-size:27px;letter-spacing:-.6px}
+.brand p{margin:7px 0 0;font-size:13px;color:var(--text-dim);letter-spacing:1.4px}
 .tabs{display:flex;gap:5px;padding:5px;border-radius:16px;background:rgba(255,255,255,.05);margin-bottom:22px}
-.tab{flex:1;padding:10px;border-radius:12px;font-size:14.5px;color:var(--text-dim)}.tab.active{background:linear-gradient(135deg,rgba(var(--accent-rgb),.9),rgba(var(--accent-rgb),.6));color:#04141a}
-.field{margin-bottom:15px}.field label{display:block;font-size:12.5px;color:var(--text-dim);margin-bottom:7px}
-.form-msg{font-size:13px;min-height:18px;margin:4px 0 10px;color:#ff8b8b}.form-msg.ok{color:var(--accent)}
-#mainScreen{padding:16px;gap:16px}.sidebar{width:342px;flex:0 0 342px;display:flex;flex-direction:column;border-radius:26px;overflow:hidden}
-.side-head{display:flex;align-items:center;gap:12px;padding:18px}.side-actions{display:flex;gap:8px;padding:0 16px 12px}.pill-btn{flex:1;padding:10px;border-radius:13px;font-size:13.5px;font-weight:600;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11)}
-.search-wrap{padding:0 16px 10px}.side-tabs{display:flex;gap:4px;padding:0 16px 8px}.st{flex:1;padding:9px;border-radius:11px;font-size:13.5px;color:var(--text-dim)}.st.active{background:rgba(255,255,255,.1);color:var(--text)}
-.list{flex:1;overflow-y:auto;padding:6px 10px 14px}.item{display:flex;gap:12px;align-items:center;padding:11px 12px;border-radius:16px;cursor:pointer}.item:hover{background:rgba(255,255,255,.065)}
+.tab{flex:1;padding:10px;border-radius:12px;font-size:14.5px;font-weight:600;color:var(--text-dim);transition:background .25s,color .25s,transform .2s var(--ease-bounce)}
+.tab.active{background:linear-gradient(135deg,rgba(var(--accent-rgb),.9),rgba(var(--accent-rgb),.6));color:#04141a}
+.field{margin-bottom:15px}
+.field label{display:block;font-size:12.5px;color:var(--text-dim);margin-bottom:7px}
+.form-msg{font-size:13px;min-height:18px;margin:4px 0 10px;color:#ff8b8b;transition:opacity .2s}
+.form-msg.ok{color:var(--accent)}
+
+/* ===== 主界面（修复灰色空缺） ===== */
+#mainScreen{padding:16px;gap:16px;width:100%;max-width:100vw;overflow:hidden}
+.sidebar{width:342px;flex:0 0 342px;display:flex;flex-direction:column;border-radius:26px;overflow:hidden;transition:transform .3s var(--ease-smooth)}
+.side-head{display:flex;align-items:center;gap:12px;padding:18px}
+.side-actions{display:flex;gap:8px;padding:0 16px 12px}
+.pill-btn{flex:1;padding:10px;border-radius:13px;font-size:13.5px;font-weight:600;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);transition:background .22s,transform .2s var(--ease-bounce)}
+.pill-btn:hover{background:rgba(var(--accent-rgb),.18);border-color:rgba(var(--accent-rgb),.4)}
+.search-wrap{padding:0 16px 10px}
+.side-tabs{display:flex;gap:4px;padding:0 16px 8px}
+.st{flex:1;padding:9px;border-radius:11px;font-size:13.5px;font-weight:600;color:var(--text-dim);transition:background .22s,color .22s,transform .2s var(--ease-bounce)}
+.st.active{background:rgba(255,255,255,.1);color:var(--text)}
+.list{flex:1;overflow-y:auto;padding:6px 10px 14px}
+.item{display:flex;gap:12px;align-items:center;padding:11px 12px;border-radius:16px;cursor:pointer;transition:background .2s,transform .2s var(--ease-bounce);position:relative}
+.item:active{transform:scale(.98)}
+.item:hover{background:rgba(255,255,255,.065)}
 .item.active{background:linear-gradient(120deg,rgba(var(--accent-rgb),.2),rgba(var(--accent-rgb),.06));border:1px solid rgba(var(--accent-rgb),.32)}
-.item-body{flex:1;min-width:0}.item-name{font-size:14.5px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.item-sub{font-size:12.5px;color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.item-actions{opacity:0;transition:.2s}.item:hover .item-actions{opacity:1}.item-del{width:28px;height:28px;border-radius:8px;background:rgba(239,68,68,.18);color:#fca5a5;display:grid;place-items:center}
-.empty-tip{text-align:center;color:var(--text-dim);font-size:13.5px;padding:44px 20px;line-height:2}
-.chat{flex:1;display:flex;flex-direction:column;border-radius:26px;overflow:hidden}#chatEmpty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--text-dim);text-align:center;padding:30px}
-.chat-inner{flex:1;display:flex;flex-direction:column;min-height:0}.chat-head{display:flex;align-items:center;gap:13px;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
-.messages{flex:1;overflow-y:auto;padding:22px}.msg{display:flex;gap:10px;margin-bottom:16px}.msg.me{flex-direction:row-reverse}
-.bwrap{display:flex;flex-direction:column;max-width:72%}.msg.me .bwrap{align-items:flex-end}
-.bubble{padding:11px 15px;border-radius:18px;background:rgba(255,255,255,.075);font-size:14.5px;line-height:1.6;word-break:break-word;white-space:pre-wrap}
-.msg.me .bubble{background:linear-gradient(135deg,rgba(var(--accent-rgb),.34),rgba(var(--accent-rgb),.15));border-bottom-right-radius:6px}
-.msg:not(.me) .bubble{border-bottom-left-radius:6px}.bubble-img img{max-width:100%;max-height:300px;border-radius:14px;display:block}
-.composer{display:flex;gap:10px;align-items:flex-end;padding:14px 18px;border-top:1px solid rgba(255,255,255,.08)}
-.send-btn{padding:0 24px;height:46px;border-radius:16px;background:linear-gradient(135deg,rgba(var(--accent-rgb),.95),rgba(var(--accent-rgb),.6));color:#04141a;font-weight:700}
-.overlay{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(2,4,10,.55);backdrop-filter:blur(8px);opacity:0;transition:.25s;pointer-events:none}
-.overlay.show{opacity:1;pointer-events:auto}.modal{width:min(500px,100%);max-height:86vh;overflow-y:auto;border-radius:26px;transform:translateY(18px);transition:.3s}.overlay.show .modal{transform:none}
-#toast{position:fixed;left:50%;bottom:44px;transform:translate(-50%,26px);padding:12px 22px;border-radius:99px;font-size:14px;background:rgba(20,24,34,.86);border:1px solid rgba(255,255,255,.16);opacity:0;transition:.3s;z-index:99}
+.item-body{flex:1;min-width:0}
+.item-name{font-size:14.5px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item-sub{font-size:12.5px;color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:4px}
+.item-actions{display:flex;gap:4px;opacity:0;transition:opacity .2s}
+.item:hover .item-actions{opacity:1}
+.item-del{width:28px;height:28px;border-radius:8px;background:rgba(239,68,68,.18);color:#fca5a5;display:grid;place-items:center;transition:background .2s,transform .2s var(--ease-bounce)}
+.item-del:hover{background:rgba(239,68,68,.35)}
+.empty-tip{text-align:center;color:var(--text-dim);font-size:13.5px;padding:44px 20px;line-height:2;animation:fadeIn .5s ease}
+
+/* ===== 聊天界面 ===== */
+.chat{flex:1;display:flex;flex-direction:column;border-radius:26px;overflow:hidden;position:relative;max-width:100%}
+#chatEmpty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--text-dim);text-align:center;padding:30px;animation:fadeIn .6s ease}
+.chat-inner{flex:1;display:flex;flex-direction:column;min-height:0}
+.chat-head{display:flex;align-items:center;gap:13px;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.022)}
+.chat-head .chat-name{font-size:16px;font-weight:700}
+.chat-head .chat-sub{font-size:12px;color:var(--text-dim);margin-top:3px}
+.messages{flex:1;overflow-y:auto;padding:22px;display:flex;flex-direction:column;gap:16px}
+.sysmsg{text-align:center;font-size:12px;color:var(--text-dim);margin:14px auto;padding:6px 14px;width:fit-content;background:rgba(255,255,255,.055);border-radius:99px;border:1px solid rgba(255,255,255,.07)}
+.msg{display:flex;gap:10px;align-items:flex-end;animation:msgIn .4s var(--ease-bounce) forwards}
+@keyframes msgIn{from{opacity:0;transform:translateY(15px) scale(.95)}to{opacity:1;transform:none}}
+.msg.me{flex-direction:row-reverse}
+.bwrap{display:flex;flex-direction:column;max-width:min(620px,72%);min-width:0}
+.msg.me .bwrap{align-items:flex-end}
+.bubble{padding:11px 15px;border-radius:18px;font-size:14.5px;line-height:1.6;background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(16px);word-break:break-word;white-space:pre-wrap;transition:background .2s}
+.msg.me .bubble{background:linear-gradient(135deg,rgba(var(--accent-rgb),.34),rgba(var(--accent-rgb),.15));border-color:rgba(var(--accent-rgb),.42);border-bottom-right-radius:6px}
+.msg:not(.me) .bubble{border-bottom-left-radius:6px}
+.bubble-img{padding:5px;overflow:hidden;max-width:100%}
+.bubble-img img{max-width:100%;max-height:320px;border-radius:14px;display:block;object-fit:cover;transition:transform .3s var(--ease-bounce)}
+.bubble-img img:hover{transform:scale(1.02)}
+.btime{font-size:10.5px;color:var(--text-dim);margin:5px 5px 0;opacity:.8}
+
+/* ===== 发送框 ===== */
+.composer{display:flex;gap:10px;align-items:flex-end;padding:14px 18px;border-top:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.022);transition:background .2s}
+.composer textarea{flex:1;resize:none;max-height:150px;min-height:46px;padding:13px 16px;font-size:14.5px;line-height:1.5;border-radius:16px;transition:height .1s}
+.img-btn{width:46px;height:46px;flex:0 0 auto;border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);font-size:18px;transition:background .22s,transform .2s var(--ease-bounce)}
+.img-btn:hover{background:rgba(255,255,255,.15)}
+.send-btn{padding:0 24px;height:46px;border-radius:16px;background:linear-gradient(135deg,rgba(var(--accent-rgb),.95),rgba(var(--accent-rgb),.6));color:#04141a;font-weight:700;transition:transform .2s var(--ease-bounce),box-shadow .2s}
+
+/* ===== 弹窗 ===== */
+.overlay{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(2,4,10,.55);backdrop-filter:blur(8px);opacity:0;transition:opacity .3s;pointer-events:none}
+.overlay.show{opacity:1;pointer-events:auto}
+.modal{width:min(500px,100%);max-height:86vh;overflow-y:auto;border-radius:26px;transform:translateY(20px) scale(.96);transition:transform .4s var(--ease-bounce)}
+.overlay.show .modal{transform:none}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:20px 22px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.modal-head h3{margin:0;font-size:16.5px;font-weight:700}
+.modal-body{padding:20px 22px 22px}
+.pick-list{display:flex;flex-direction:column;gap:7px;max-height:300px;overflow-y:auto;padding-right:4px}
+.pick{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:13px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:background .2s,transform .2s var(--ease-bounce)}
+.pick:hover{background:rgba(255,255,255,.1)}
+.pick:active{transform:scale(.98)}
+
+/* ===== Toast 提示 ===== */
+#toast{position:fixed;left:50%;bottom:44px;transform:translate(-50%,26px);padding:12px 22px;border-radius:99px;font-size:14px;z-index:99;background:rgba(20,24,34,.86);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(20px);opacity:0;transition:transform .4s var(--ease-bounce),opacity .3s;pointer-events:none}
 #toast.show{opacity:1;transform:translate(-50%,0)}
-@media(max-width:880px){#mainScreen{padding:0;gap:0}.sidebar{width:100%;border-radius:0}.chat{position:fixed;inset:0;transform:translateX(100%);transition:transform .34s}body.show-chat .chat{transform:none}.bwrap{max-width:82%}}
+
+/* ===== 手机端布局（修复右滑空缺） ===== */
+@media(max-width:880px){
+  #mainScreen{padding:0;gap:0;display:block}
+  .sidebar{width:100%;border-radius:0;border:none;display:flex;flex-direction:column;position:fixed;inset:0;z-index:1}
+  .chat{position:fixed;inset:0;z-index:20;border-radius:0;border:none;transform:translateX(100%);transition:transform .4s var(--ease-smooth);will-change:transform;backface-visibility:hidden}
+  body.show-chat .chat{transform:translateX(0)}
+  .mobile-back{display:grid!important}
+  .bwrap{max-width:82%}
+  .messages{padding:16px 14px 8px}
+}
+.mobile-back{display:none}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
@@ -83,9 +185,9 @@ input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);box-shadow:0
 <div id="mainScreen" class="screen hidden">
   <aside class="sidebar glass">
     <div class="side-head">
-      <div class="avatar" id="myAvatar" style="cursor:pointer">?</div>
-      <div class="me-info"><div id="myName">—</div><div id="myId" style="font-size:11.5px;color:var(--text-dim);cursor:pointer">ID: —</div></div>
-      <button class="icon-btn" id="btnProfile">👤</button><button class="icon-btn" id="btnLogout">⎋</button>
+      <div class="avatar" id="myAvatar" style="cursor:pointer" title="点击编辑资料">?</div>
+      <div class="me-info" style="flex:1"><div id="myName" style="font-weight:700;font-size:15px">—</div><div id="myId" style="font-size:11.5px;color:var(--text-dim);cursor:pointer">ID: —</div></div>
+      <button class="icon-btn" id="btnProfile" title="个人中心">👤</button><button class="icon-btn" id="btnLogout" title="退出登录">⎋</button>
     </div>
     <div class="side-actions"><button class="pill-btn" id="btnAddFriend">＋ 加好友</button><button class="pill-btn" id="btnNewGroup">✦ 建群</button></div>
     <div class="search-wrap"><input id="searchInput" placeholder="搜索聊天 / 好友…" /></div>
@@ -93,11 +195,11 @@ input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);box-shadow:0
     <div class="list" id="list"></div>
   </aside>
   <main class="chat glass">
-    <div id="chatEmpty"><div style="font-size:64px">🫧</div><h2>开始你的对话</h2><p>左侧选择一位好友或群聊</p></div>
+    <div id="chatEmpty"><div style="font-size:64px;animation:bob 4s ease-in-out infinite">🫧</div><h2>开始你的对话</h2><p style="font-size:13.5px;color:var(--text-dim)">左侧选择一位好友或群聊<br>也可以点「加好友」用 ID 找到朋友</p></div>
     <div class="chat-inner hidden" id="chatInner">
-      <header class="chat-head"><button class="icon-btn" id="btnBack">‹</button><div class="avatar" id="chatAvatar">?</div><div style="flex:1"><div id="chatName">—</div><div id="chatSub" style="font-size:12px;color:var(--text-dim)">—</div></div><button class="icon-btn hidden" id="btnGroupSettings">⚙️</button></header>
+      <header class="chat-head"><button class="icon-btn mobile-back" id="btnBack" style="display:none">‹</button><div class="avatar" id="chatAvatar">?</div><div style="flex:1;min-width:0"><div class="chat-name" id="chatName">—</div><div class="chat-sub" id="chatSub">—</div></div><button class="icon-btn hidden" id="btnGroupSettings">⚙️</button></header>
       <div class="messages" id="messages"></div>
-      <div class="composer"><button class="icon-btn" id="btnImage">🖼️</button><input type="file" id="imageInput" accept="image/*" hidden><textarea id="msgInput" rows="1" placeholder="输入消息…"></textarea><button class="send-btn" id="btnSend">发送</button></div>
+      <div class="composer"><button class="img-btn" id="btnImage">🖼️</button><input type="file" id="imageInput" accept="image/*" hidden><textarea id="msgInput" rows="1" placeholder="输入消息…"></textarea><button class="send-btn" id="btnSend">发送</button></div>
     </div>
   </main>
 </div>
@@ -127,7 +229,7 @@ async function sbFetch(table, method = 'GET', body = null, query = '') {
 }
 
 let me = null, activeChat = null, view = 'chats', searchTerm = '', pollingTimer = null;
-let authMode = 'login'; // 🔥 修复点：补上这个丢失的变量！
+let authMode = 'login';
 
 function toast(msg){ let el=$('#toast'); if(!el){el=document.createElement('div');el.id='toast';document.body.appendChild(el);} el.textContent=msg; el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),2200); }
 function avatarHTML(u, cls='') { if(!u) return `<div class="avatar ${cls}">?</div>`; if(u.avatar) return `<div class="avatar ${cls}"><img src="${esc(u.avatar)}"></div>`; return `<div class="avatar ${cls}" style="background:linear-gradient(140deg,#5eead4,#0ea5e9)">${esc((u.name||'?')[0])}</div>`; }
@@ -233,6 +335,7 @@ async function openChat(id) {
 function renderMessages() {
   if (!activeChat) return;
   sbFetch('messages', 'GET', null, `chat_id=eq.${activeChat.id}&order=created_at.asc`).then(msgs => {
+    const oldHeight = $('#messages').scrollHeight;
     $('#messages').innerHTML = msgs.map(m => {
       const mine = m.sender === me.id;
       let content = m.type === 'image' ? `<div class="bubble bubble-img"><img src="${esc(m.content)}"></div>` : `<div class="bubble">${esc(m.content)}</div>`;
