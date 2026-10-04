@@ -4,7 +4,6 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Liquid Chat · 液态玻璃聊天室</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box}
 html,body{height:100%}
@@ -110,10 +109,18 @@ const $$ = (s, r=document) => [...r.querySelectorAll(s)];
 const uid = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36);
 const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-// ✅ 你的真实密钥已经填好了，直接复制就能用
+// ✅ 使用你现有的密钥，无需去后台找 eyJ 开头的密钥！
 const SUPABASE_URL = "https://qjsupbxshubysfnyhbwe.supabase.co";
 const SUPABASE_KEY = "sb_publishable_PLydvfYMjBWnFY2eKSxTgQ_BAxYwTZp"; 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+async function sbFetch(table, method = 'GET', body = null, query = '') {
+  const url = `${SUPABASE_URL}/rest/v1/${table}${query ? '?' + query : ''}`;
+  const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
+  if (method === 'POST') headers['Prefer'] = 'return=representation';
+  const res = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : null });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
 
 let me = null, activeChat = null, view = 'chats', searchTerm = '', pollingTimer = null;
 
@@ -135,21 +142,22 @@ $('#authForm').onsubmit = async e => {
     const name = $('#regName').value.trim();
     if (!name || pwd.length < 4) return toast('昵称和密码不能为空（密码至少4位）');
     if (pwd !== $('#regPwd2').value.trim()) return toast('两次密码不一致');
-    const { data: users } = await supabase.from('users').select('id');
+    const users = await sbFetch('users', 'GET', null, 'select=id');
     let max = 0; users.forEach(u => { const n = parseInt(u.id); if (n > max) max = n; });
     const id = String(max+1).padStart(6, '0');
-    const { error } = await supabase.from('users').insert({ id, name, pwd, avatar: '', created_at: Date.now() });
-    if (error) return toast('注册失败：' + error.message);
+    await sbFetch('users', 'POST', { id, name, pwd, avatar: '', created_at: Date.now() });
     localStorage.setItem('chat_uid', id); await loadMe(id); toast('注册成功，你的 ID 是 ' + id);
   } else {
     const id = $('#loginId').value.trim();
-    const { data: u } = await supabase.from('users').select('*').eq('id', id).single();
+    const users = await sbFetch('users', 'GET', null, `id=eq.${id}`);
+    const u = users[0];
     if (!u || u.pwd !== pwd) return toast('ID 不存在或密码错误');
     localStorage.setItem('chat_uid', id); await loadMe(id); toast('欢迎回来，' + u.name);
   }
 };
 async function loadMe(id) {
-  const { data: u } = await supabase.from('users').select('*').eq('id', id).single();
+  const users = await sbFetch('users', 'GET', null, `id=eq.${id}`);
+  const u = users[0];
   if (!u) return showAuth();
   me = u; $('#authScreen').classList.add('hidden'); $('#mainScreen').classList.remove('hidden');
   refreshProfile(); renderList();
@@ -167,8 +175,8 @@ async function renderList() {
   if (!me) return;
   const q = searchTerm.trim().toLowerCase(); let html = '';
   if (view === 'chats') {
-    const { data: chats } = await supabase.from('chats').select('*');
-    const { data: msgs } = await supabase.from('messages').select('*').order('created_at', { ascending: false });
+    const chats = await sbFetch('chats', 'GET');
+    const msgs = await sbFetch('messages', 'GET', null, 'order=created_at.desc');
     const myChats = chats.filter(c => c.members && c.members.includes(me.id) && !c.deleted);
     if (!myChats.length) html = '<div class="empty-tip">还没有聊天<br>点「加好友」开始吧 ✨</div>';
     else {
@@ -181,11 +189,11 @@ async function renderList() {
       }).join('');
     }
   } else {
-    const { data: fr } = await supabase.from('friends').select('friend_id').eq('user_id', me.id);
+    const fr = await sbFetch('friends', 'GET', null, `user_id=eq.${me.id}&select=friend_id`);
     const ids = fr.map(f => f.friend_id);
     if (!ids.length) html = '<div class="empty-tip">还没有好友<br>用 ID 搜索并添加吧 🔍</div>';
     else {
-      const { data: users } = await supabase.from('users').select('*').in('id', ids);
+      const users = await sbFetch('users', 'GET', null, `id=in.(${ids.join(',')})`);
       html = users.map(u => `<div class="item" onclick="startDM('${u.id}')">${avatarHTML(u)}<div class="item-body"><div class="item-name">${esc(u.name)}</div><div class="item-sub">ID: ${u.id}</div></div><div class="item-actions"><button class="item-del" onclick="event.stopPropagation();delFriend('${u.id}')">✕</button></div></div>`).join('');
     }
   }
@@ -193,7 +201,8 @@ async function renderList() {
 }
 
 async function openChat(id) {
-  const { data: c } = await supabase.from('chats').select('*').eq('id', id).single();
+  const chats = await sbFetch('chats', 'GET', null, `id=eq.${id}`);
+  const c = chats[0];
   if (!c || c.deleted) return toast('该聊天已解散');
   activeChat = c; document.body.classList.add('show-chat');
   $('#chatEmpty').classList.add('hidden'); $('#chatInner').classList.remove('hidden');
@@ -204,7 +213,7 @@ async function openChat(id) {
 }
 function renderMessages() {
   if (!activeChat) return;
-  supabase.from('messages').select('*').eq('chat_id', activeChat.id).order('created_at').then(({data: msgs}) => {
+  sbFetch('messages', 'GET', null, `chat_id=eq.${activeChat.id}&order=created_at.asc`).then(msgs => {
     $('#messages').innerHTML = msgs.map(m => {
       const mine = m.sender === me.id;
       let content = m.type === 'image' ? `<div class="bubble bubble-img"><img src="${esc(m.content)}"></div>` : `<div class="bubble">${esc(m.content)}</div>`;
@@ -215,7 +224,7 @@ function renderMessages() {
 }
 $('#btnSend').onclick = async () => {
   const text = $('#msgInput').value.trim(); if (!text || !activeChat) return;
-  await supabase.from('messages').insert({ id: uid(), chat_id: activeChat.id, sender: me.id, type: 'text', content: text, created_at: Date.now() });
+  await sbFetch('messages', 'POST', { id: uid(), chat_id: activeChat.id, sender: me.id, type: 'text', content: text, created_at: Date.now() });
   $('#msgInput').value = ''; renderMessages();
 };
 $('#msgInput').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('#btnSend').click(); } };
@@ -230,7 +239,7 @@ $('#imageInput').onchange = e => {
       canvas.width = img.width * ratio; canvas.height = img.height * ratio;
       canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
       const data = canvas.toDataURL('image/jpeg', 0.75);
-      await supabase.from('messages').insert({ id: uid(), chat_id: activeChat.id, sender: me.id, type: 'image', content: data, created_at: Date.now() });
+      await sbFetch('messages', 'POST', { id: uid(), chat_id: activeChat.id, sender: me.id, type: 'image', content: data, created_at: Date.now() });
       renderMessages();
     }; img.src = ev.target.result;
   }; reader.readAsDataURL(file);
@@ -238,14 +247,14 @@ $('#imageInput').onchange = e => {
 
 async function startDM(fid) {
   const ids = [me.id, fid].sort(); const dmId = 'dm_' + ids.join('_');
-  const { data: exist } = await supabase.from('chats').select('*').eq('id', dmId).single();
-  if (!exist) await supabase.from('chats').insert({ id: dmId, type: 'dm', members: ids, created_at: Date.now(), owner: '', name: '' });
+  const exist = (await sbFetch('chats', 'GET', null, `id=eq.${dmId}`))[0];
+  if (!exist) await sbFetch('chats', 'POST', { id: dmId, type: 'dm', members: ids, created_at: Date.now(), owner: '', name: '' });
   openChat(dmId);
 }
 async function delFriend(fid) {
   if (!confirm('确定删除该好友吗？')) return;
-  await supabase.from('friends').delete().eq('user_id', me.id).eq('friend_id', fid);
-  await supabase.from('friends').delete().eq('user_id', fid).eq('friend_id', me.id);
+  await sbFetch('friends', 'DELETE', null, `user_id=eq.${me.id}&friend_id=eq.${fid}`);
+  await sbFetch('friends', 'DELETE', null, `user_id=eq.${fid}&friend_id=eq.${me.id}`);
   renderList();
 }
 $('#btnAddFriend').onclick = () => {
@@ -253,55 +262,53 @@ $('#btnAddFriend').onclick = () => {
     md.querySelector('#doAdd').onclick = async () => {
       const id = md.querySelector('#fId').value.trim();
       if (id === me.id) return toast('不能加自己');
-      const { data: u } = await supabase.from('users').select('*').eq('id', id).single();
+      const u = (await sbFetch('users', 'GET', null, `id=eq.${id}`))[0];
       if (!u) return toast('用户不存在');
-      await supabase.from('friends').insert([{ user_id: me.id, friend_id: id }, { user_id: id, friend_id: me.id }]);
+      await sbFetch('friends', 'POST', [{ user_id: me.id, friend_id: id }, { user_id: id, friend_id: me.id }]);
       toast('已添加 ' + u.name); closeModal(); renderList();
     };
   });
 };
-$('#btnNewGroup').onclick = () => {
-  supabase.from('friends').select('friend_id').eq('user_id', me.id).then(async ({data: fr}) => {
-    const ids = fr.map(f => f.friend_id);
-    const { data: users } = await supabase.from('users').select('*').in('id', ids);
-    openModal(`<div class="modal-head"><h3>创建群聊</h3><button class="icon-btn" data-close>✕</button></div><div class="modal-body"><div class="field"><label>群名称</label><input id="gName"></div><div class="field"><label>选择成员</label>${users.map(u=>`<label class="pick"><input type="checkbox" value="${u.id}">${avatarHTML(u,'sm')} ${u.name}</label>`).join('')}</div><button class="primary-btn" id="doCreate">创建群聊</button></div>`, md => {
-      md.querySelector('#doCreate').onclick = async () => {
-        const name = md.querySelector('#gName').value.trim();
-        const members = [me.id, ...[...md.querySelectorAll('input:checked')].map(i=>i.value)];
-        if (!name || members.length < 2) return toast('请填写群名并选择成员');
-        await supabase.from('chats').insert({ id: 'g_' + uid(), type: 'group', name, owner: me.id, members, deleted: false, created_at: Date.now() });
-        closeModal(); renderList(); toast('群聊已创建');
-      };
-    });
+$('#btnNewGroup').onclick = async () => {
+  const fr = await sbFetch('friends', 'GET', null, `user_id=eq.${me.id}&select=friend_id`);
+  const ids = fr.map(f => f.friend_id);
+  const users = await sbFetch('users', 'GET', null, `id=in.(${ids.join(',')})`);
+  openModal(`<div class="modal-head"><h3>创建群聊</h3><button class="icon-btn" data-close>✕</button></div><div class="modal-body"><div class="field"><label>群名称</label><input id="gName"></div><div class="field"><label>选择成员</label>${users.map(u=>`<label class="pick"><input type="checkbox" value="${u.id}">${avatarHTML(u,'sm')} ${u.name}</label>`).join('')}</div><button class="primary-btn" id="doCreate">创建群聊</button></div>`, md => {
+    md.querySelector('#doCreate').onclick = async () => {
+      const name = md.querySelector('#gName').value.trim();
+      const members = [me.id, ...[...md.querySelectorAll('input:checked')].map(i=>i.value)];
+      if (!name || members.length < 2) return toast('请填写群名并选择成员');
+      await sbFetch('chats', 'POST', { id: 'g_' + uid(), type: 'group', name, owner: me.id, members, deleted: false, created_at: Date.now() });
+      closeModal(); renderList(); toast('群聊已创建');
+    };
   });
 };
-$('#btnGroupSettings').onclick = () => {
+$('#btnGroupSettings').onclick = async () => {
   if (!activeChat || activeChat.type !== 'group') return;
   const isOwner = activeChat.owner === me.id;
-  supabase.from('users').select('*').in('id', activeChat.members).then(({data: us}) => {
-    openModal(`<div class="modal-head"><h3>群设置</h3><button class="icon-btn" data-close>✕</button></div><div class="modal-body"><div class="field"><label>群成员</label>${us.map(u=>`<div class="pick" style="cursor:default">${avatarHTML(u,'sm')} ${u.name} ${u.id===activeChat.owner?'👑':''} ${isOwner&&u.id!==me.id?`<button class="item-del" onclick="kick('${u.id}')">踢</button>`:''}</div>`).join('')}</div>${isOwner ? `<button class="danger-btn" id="doDissolve" style="width:100%">解散群聊</button>` : `<button class="danger-btn" id="doExit" style="width:100%">退出群聊</button>`}<div style="height:8px"></div><button class="primary-btn" data-close>关闭</button></div>`, md => {
-      if (isOwner) md.querySelector('#doDissolve').onclick = async () => {
-        if (!confirm('确定解散？')) return;
-        await supabase.from('chats').update({ deleted: true, members: [] }).eq('id', activeChat.id);
-        activeChat = null; document.body.classList.remove('show-chat'); closeModal(); renderList(); toast('已解散');
-      };
-      else md.querySelector('#doExit').onclick = async () => {
-        if (!confirm('确定退出？')) return;
-        const newM = activeChat.members.filter(id => id !== me.id);
-        await supabase.from('chats').update({ members: newM }).eq('id', activeChat.id);
-        activeChat = null; document.body.classList.remove('show-chat'); closeModal(); renderList(); toast('已退出');
-      };
-    });
+  const us = await sbFetch('users', 'GET', null, `id=in.(${activeChat.members.join(',')})`);
+  openModal(`<div class="modal-head"><h3>群设置</h3><button class="icon-btn" data-close>✕</button></div><div class="modal-body"><div class="field"><label>群成员</label>${us.map(u=>`<div class="pick" style="cursor:default">${avatarHTML(u,'sm')} ${u.name} ${u.id===activeChat.owner?'👑':''} ${isOwner&&u.id!==me.id?`<button class="item-del" onclick="kick('${u.id}')">踢</button>`:''}</div>`).join('')}</div>${isOwner ? `<button class="danger-btn" id="doDissolve" style="width:100%">解散群聊</button>` : `<button class="danger-btn" id="doExit" style="width:100%">退出群聊</button>`}<div style="height:8px"></div><button class="primary-btn" data-close>关闭</button></div>`, md => {
+    if (isOwner) md.querySelector('#doDissolve').onclick = async () => {
+      if (!confirm('确定解散？')) return;
+      await sbFetch('chats', 'PATCH', { deleted: true, members: [] }, `id=eq.${activeChat.id}`);
+      activeChat = null; document.body.classList.remove('show-chat'); closeModal(); renderList(); toast('已解散');
+    };
+    else md.querySelector('#doExit').onclick = async () => {
+      if (!confirm('确定退出？')) return;
+      const newM = activeChat.members.filter(id => id !== me.id);
+      await sbFetch('chats', 'PATCH', { members: newM }, `id=eq.${activeChat.id}`);
+      activeChat = null; document.body.classList.remove('show-chat'); closeModal(); renderList(); toast('已退出');
+    };
   });
 };
-window.kick = async (id) => { if(!confirm('确定踢出？')) return; const nm = activeChat.members.filter(i=>i!==id); await supabase.from('chats').update({members: nm}).eq('id', activeChat.id); renderMessages(); toast('已踢出'); };
+window.kick = async (id) => { if(!confirm('确定踢出？')) return; const nm = activeChat.members.filter(i=>i!==id); await sbFetch('chats', 'PATCH', {members: nm}, `id=eq.${activeChat.id}`); renderMessages(); toast('已踢出'); };
 function openProfile() {
   openModal(`<div class="modal-head"><h3>个人中心</h3><button class="icon-btn" data-close>✕</button></div><div class="modal-body"><div class="field" style="text-align:center"><div id="prev" style="display:flex;justify-content:center">${avatarHTML(me,'lg')}</div><input type="file" id="avFile" accept="image/*" style="margin-top:10px"></div><div class="field"><label>昵称</label><input id="pName" value="${esc(me.name)}"></div><button class="primary-btn" id="doSave">保存修改</button></div>`, md => {
     let newAv = me.avatar;
     md.querySelector('#avFile').onchange = e => { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = ev => { newAv = ev.target.result; md.querySelector('#prev').innerHTML = `<div class="avatar lg"><img src="${newAv}"></div>`; }; r.readAsDataURL(f); };
     md.querySelector('#doSave').onclick = async () => {
       const name = md.querySelector('#pName').value.trim(); if(!name) return toast('昵称不能为空');
-      await supabase.from('users').update({ name, avatar: newAv }).eq('id', me.id);
+      await sbFetch('users', 'PATCH', { name, avatar: newAv }, `id=eq.${me.id}`);
       me.name = name; me.avatar = newAv; refreshProfile(); closeModal(); toast('资料已更新');
     };
   });
