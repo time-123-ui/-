@@ -236,7 +236,7 @@ $('#authForm').onsubmit = async e => {
       const users = await sbFetch('users', 'GET', null, `id=eq.${id}`);
       const u = users[0];
       if (!u || u.pwd !== pwd) return toast('ID 不存在或密码错误');
-      if (u.banned) return toast('该账号已被管理员封禁，无法登录');
+      if (u.banned === true) return toast('该账号已被管理员封禁，无法登录');
       localStorage.setItem('chat_uid', id); await loadMe(id); toast('欢迎回来，' + u.name);
     }
   } catch (err) {
@@ -249,7 +249,7 @@ async function loadMe(id) {
     const users = await sbFetch('users', 'GET', null, `id=eq.${id}`);
     const u = users[0];
     if (!u) return showAuth();
-    if (u.banned) { toast('该账号已被封禁'); return showAuth(); }
+    if (u.banned === true) { toast('该账号已被封禁'); return showAuth(); }
     me = u; $('#authScreen').classList.add('hidden'); $('#mainScreen').classList.remove('hidden');
     refreshProfile(); renderList();
     if (pollingTimer) clearInterval(pollingTimer);
