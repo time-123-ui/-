@@ -7,25 +7,11 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow-x:hidden}
-:root{
-  --accent:#5eead4;--accent-rgb:94,234,212;--text:#eef2ff;
-  --text-dim:rgba(238,242,255,.52);--glass:rgba(255,255,255,.065);--stroke:rgba(255,255,255,.14);
-  --blur:26px;--radius:24px;
-  --ease-bounce:cubic-bezier(0.34, 1.56, 0.64, 1);
-  --ease-smooth:cubic-bezier(0.19, 1, 0.22, 1);
-}
-body{
-  margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
-  color:var(--text);background:#05060b;overflow:hidden;
-  -webkit-font-smoothing:antialiased;
-}
-::-webkit-scrollbar{width:8px;height:8px}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:99px}
-.bg{position:fixed;inset:0;z-index:0;overflow:hidden;transition:background .9s ease}
-.bg .blob{position:absolute;width:56vmax;height:56vmax;border-radius:50%;filter:blur(95px);opacity:.55;mix-blend-mode:screen;will-change:transform;animation:fl 25s ease-in-out infinite}
-.b1{top:-20vmax;left:-16vmax;background:#5eead4}
-.b2{bottom:-26vmax;right:-18vmax;background:#818cf8;animation-delay:-5s}
-.b3{top:30%;left:50%;width:40vmax;height:40vmax;background:#f472b6;animation-delay:-10s}
+:root{--accent:#5eead4;--accent-rgb:94,234,212;--text:#eef2ff;--text-dim:rgba(238,242,255,.52);--glass:rgba(255,255,255,.065);--stroke:rgba(255,255,255,.14);--blur:26px;--radius:24px;--ease-bounce:cubic-bezier(0.34, 1.56, 0.64, 1);--ease-smooth:cubic-bezier(0.19, 1, 0.22, 1);}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;color:var(--text);background:#05060b;overflow:hidden;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:99px}
+.bg{position:fixed;inset:0;z-index:0;overflow:hidden;transition:background .9s ease}.bg .blob{position:absolute;width:56vmax;height:56vmax;border-radius:50%;filter:blur(95px);opacity:.55;mix-blend-mode:screen;will-change:transform;animation:fl 25s ease-in-out infinite}
+.b1{top:-20vmax;left:-16vmax;background:#5eead4}.b2{bottom:-26vmax;right:-18vmax;background:#818cf8;animation-delay:-5s}.b3{top:30%;left:50%;width:40vmax;height:40vmax;background:#f472b6;animation-delay:-10s}
 @keyframes fl{50%{transform:translate3d(10vmax,10vmax,0) scale(1.2)}}
 .glass{position:relative;background:var(--glass);backdrop-filter:blur(var(--blur)) saturate(185%);-webkit-backdrop-filter:blur(var(--blur)) saturate(185%);border:1px solid var(--stroke);border-radius:var(--radius);box-shadow:0 24px 70px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.24);isolation:isolate}
 .glass::before{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(120% 90% at 100% 0%,rgba(var(--accent-rgb),.14),transparent 58%),linear-gradient(142deg,rgba(255,255,255,.17),transparent 46%);mix-blend-mode:screen;pointer-events:none}
@@ -36,34 +22,27 @@ button:active{transform:scale(.95)}
 input,textarea{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px;color:var(--text);font-size:14.5px;transition:border-color .22s,box-shadow .22s,background .22s;width:100%}
 input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);background:rgba(255,255,255,.085);box-shadow:0 0 0 4px rgba(var(--accent-rgb),.13)}
 .primary-btn{width:100%;padding:13px;border-radius:15px;background:linear-gradient(135deg,rgba(var(--accent-rgb),.95),rgba(var(--accent-rgb),.62));color:#04141a;font-weight:700;font-size:15px;box-shadow:0 10px 30px rgba(var(--accent-rgb),.28);transition:transform .2s var(--ease-bounce),box-shadow .2s}
-.primary-btn:hover{box-shadow:0 16px 40px rgba(var(--accent-rgb),.42)}
 .ghost-btn{padding:10px 16px;border-radius:13px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);transition:background .2s,transform .2s var(--ease-bounce)}
-.ghost-btn:hover{background:rgba(255,255,255,.13)}
 .danger-btn{background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.5);color:#fca5a5;transition:background .2s,transform .2s var(--ease-bounce)}
-.danger-btn:hover{background:rgba(239,68,68,.35)}
 .icon-btn{width:38px;height:38px;flex:0 0 auto;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);font-size:15px;transition:background .2s,transform .2s var(--ease-bounce)}
-.icon-btn:hover{background:rgba(255,255,255,.15)}
 .hidden{display:none!important}
 .avatar{width:46px;height:46px;flex:0 0 auto;border-radius:15px;display:grid;place-items:center;font-weight:800;font-size:17px;color:#06141b;overflow:hidden;background:linear-gradient(140deg,#5eead4,#0ea5e9);box-shadow:inset 0 1px 0 rgba(255,255,255,.5);transition:transform .2s var(--ease-bounce)}
 .avatar.sm{width:36px;height:36px;border-radius:12px;font-size:14px}
 .avatar.lg{width:60px;height:60px;border-radius:19px;font-size:22px}
 .avatar img{width:100%;height:100%;object-fit:cover;display:block}
-.avatar:hover{transform:scale(1.05)}
-.screen{position:fixed;inset:0;z-index:1;display:flex}
-.screen.center{align-items:center;justify-content:center;padding:22px}
+.screen{position:fixed;inset:0;z-index:1;display:flex}.screen.center{align-items:center;justify-content:center;padding:22px}
 .auth-card{width:min(440px,100%);padding:40px;animation:cardIn .65s var(--ease-bounce)}
 @keyframes cardIn{from{opacity:0;transform:translateY(26px) scale(.96)}to{opacity:1;transform:none}}
 .brand{text-align:center;margin-bottom:26px}
-.brand-logo{width:74px;height:74px;margin:0 auto 16px;border-radius:24px;display:grid;place-items:center;font-size:36px;background:linear-gradient(140deg,rgba(var(--accent-rgb),.45),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.22);box-shadow:0 18px 50px rgba(var(--accent-rgb),.3);animation:bob 5s ease-in-out infinite}
+.brand-logo{width:74px;height:74px;margin:0 auto 16px;border-radius:24px;display:grid;place-items:center;font-size:36px;background:linear-gradient(140deg,rgba(var(--accent-rgb),.45),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.22);animation:bob 5s ease-in-out infinite}
 @keyframes bob{50%{transform:translateY(-8px) rotate(-3deg)}}
 .brand h1{margin:0;font-size:27px;letter-spacing:-.6px}
 .brand p{margin:7px 0 0;font-size:13px;color:var(--text-dim);letter-spacing:1.4px}
 .tabs{display:flex;gap:5px;padding:5px;border-radius:16px;background:rgba(255,255,255,.05);margin-bottom:22px}
 .tab{flex:1;padding:10px;border-radius:12px;font-size:14.5px;font-weight:600;color:var(--text-dim);transition:background .25s,color .25s,transform .2s var(--ease-bounce)}
 .tab.active{background:linear-gradient(135deg,rgba(var(--accent-rgb),.9),rgba(var(--accent-rgb),.6));color:#04141a}
-.field{margin-bottom:15px}
-.field label{display:block;font-size:12.5px;color:var(--text-dim);margin-bottom:7px}
-.form-msg{font-size:13px;min-height:18px;margin:4px 0 10px;color:#ff8b8b;transition:opacity .2s}
+.field{margin-bottom:15px}.field label{display:block;font-size:12.5px;color:var(--text-dim);margin-bottom:7px}
+.form-msg{font-size:13px;min-height:18px;margin:4px 0 10px;color:#ff8b8b}
 .form-msg.ok{color:var(--accent)}
 #mainScreen{padding:16px;gap:16px;width:100%;max-width:100vw;overflow:hidden}
 .sidebar{width:342px;flex:0 0 342px;display:flex;flex-direction:column;border-radius:26px;overflow:hidden;transition:transform .3s var(--ease-smooth)}
@@ -85,13 +64,10 @@ input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);background:r
 .item-sub{font-size:12.5px;color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:4px}
 .item-actions{display:flex;gap:4px;opacity:0;transition:opacity .2s}
 .item:hover .item-actions{opacity:1}
-.item-del{width:28px;height:28px;border-radius:8px;background:rgba(239,68,68,.18);color:#fca5a5;display:grid;place-items:center;transition:background .2s,transform .2s var(--ease-bounce)}
-.item-del:hover{background:rgba(239,68,68,.35)}
 .empty-tip{text-align:center;color:var(--text-dim);font-size:13.5px;padding:44px 20px;line-height:2;animation:fadeIn .5s ease}
-/* 称号徽章 */
 .title-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:linear-gradient(135deg,rgba(var(--accent-rgb),.35),rgba(var(--accent-rgb),.12));border:1px solid rgba(var(--accent-rgb),.45);color:var(--text);margin-left:6px;vertical-align:middle;white-space:nowrap}
 .chat{flex:1;display:flex;flex-direction:column;border-radius:26px;overflow:hidden;position:relative;max-width:100%}
-#chatEmpty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--text-dim);text-align:center;padding:30px;animation:fadeIn .6s ease}
+#chatEmpty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--text-dim);text-align:center;padding:30px}
 .chat-inner{flex:1;display:flex;flex-direction:column;min-height:0}
 .chat-head{display:flex;align-items:center;gap:13px;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.022)}
 .chat-head .chat-name{font-size:16px;font-weight:700}
@@ -103,18 +79,17 @@ input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);background:r
 .msg.me{flex-direction:row-reverse}
 .bwrap{display:flex;flex-direction:column;max-width:min(620px,72%);min-width:0}
 .msg.me .bwrap{align-items:flex-end}
-.bubble{padding:11px 15px;border-radius:18px;font-size:14.5px;line-height:1.6;background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(16px);word-break:break-word;white-space:pre-wrap;transition:background .2s}
+.bubble{padding:11px 15px;border-radius:18px;font-size:14.5px;line-height:1.6;background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(16px);word-break:break-word;white-space:pre-wrap}
 .msg.me .bubble{background:linear-gradient(135deg,rgba(var(--accent-rgb),.34),rgba(var(--accent-rgb),.15));border-color:rgba(var(--accent-rgb),.42);border-bottom-right-radius:6px}
 .msg:not(.me) .bubble{border-bottom-left-radius:6px}
 .bubble-img{padding:5px;overflow:hidden;max-width:100%}
-.bubble-img img{max-width:100%;max-height:320px;border-radius:14px;display:block;object-fit:cover;transition:transform .3s var(--ease-bounce)}
+.bubble-img img{max-width:100%;max-height:320px;border-radius:14px;display:block;object-fit:cover}
 .btime{font-size:10.5px;color:var(--text-dim);margin:5px 5px 0;opacity:.8}
-.sender{font-size:11.5px;color:var(--text-dim);margin:0 0 5px 4px;display:flex;align-items:center}
-.composer{display:flex;gap:10px;align-items:flex-end;padding:14px 18px;border-top:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.022);transition:background .2s}
-.composer textarea{flex:1;resize:none;max-height:150px;min-height:46px;padding:13px 16px;font-size:14.5px;line-height:1.5;border-radius:16px;transition:height .1s}
-.img-btn{width:46px;height:46px;flex:0 0 auto;border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);font-size:18px;transition:background .22s,transform .2s var(--ease-bounce)}
-.img-btn:hover{background:rgba(255,255,255,.15)}
-.send-btn{padding:0 24px;height:46px;border-radius:16px;background:linear-gradient(135deg,rgba(var(--accent-rgb),.95),rgba(var(--accent-rgb),.6));color:#04141a;font-weight:700;transition:transform .2s var(--ease-bounce),box-shadow .2s}
+.sender{font-size:11.5px;color:var(--text-dim);margin:0 0 5px 4px}
+.composer{display:flex;gap:10px;align-items:flex-end;padding:14px 18px;border-top:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.022)}
+.composer textarea{flex:1;resize:none;max-height:150px;min-height:46px;padding:13px 16px;font-size:14.5px;line-height:1.5;border-radius:16px}
+.img-btn{width:46px;height:46px;flex:0 0 auto;border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);font-size:18px}
+.send-btn{padding:0 24px;height:46px;border-radius:16px;background:linear-gradient(135deg,rgba(var(--accent-rgb),.95),rgba(var(--accent-rgb),.6));color:#04141a;font-weight:700}
 .overlay{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(2,4,10,.55);backdrop-filter:blur(8px);opacity:0;transition:opacity .3s;pointer-events:none}
 .overlay.show{opacity:1;pointer-events:auto}
 .modal{width:min(500px,100%);max-height:86vh;overflow-y:auto;border-radius:26px;transform:translateY(20px) scale(.96);transition:transform .4s var(--ease-bounce)}
@@ -123,9 +98,7 @@ input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);background:r
 .modal-head h3{margin:0;font-size:16.5px;font-weight:700}
 .modal-body{padding:20px 22px 22px}
 .pick-list{display:flex;flex-direction:column;gap:7px;max-height:300px;overflow-y:auto;padding-right:4px}
-.pick{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:13px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:background .2s,transform .2s var(--ease-bounce)}
-.pick:hover{background:rgba(255,255,255,.1)}
-.pick:active{transform:scale(.98)}
+.pick{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:13px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);cursor:pointer}
 #toast{position:fixed;left:50%;bottom:44px;transform:translate(-50%,26px);padding:12px 22px;border-radius:99px;font-size:14px;z-index:99;background:rgba(20,24,34,.86);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(20px);opacity:0;transition:transform .4s var(--ease-bounce),opacity .3s;pointer-events:none}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 @media(max-width:880px){
@@ -163,19 +136,24 @@ input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);background:r
 <div id="mainScreen" class="screen hidden">
   <aside class="sidebar glass">
     <div class="side-head">
-      <div class="avatar" id="myAvatar" style="cursor:pointer" title="点击编辑资料">?</div>
+      <div class="avatar" id="myAvatar" style="cursor:pointer">?</div>
       <div class="me-info" style="flex:1"><div id="myName" style="font-weight:700;font-size:15px">—</div><div id="myId" style="font-size:11.5px;color:var(--text-dim);cursor:pointer">ID: —</div></div>
-      <button class="icon-btn" id="btnProfile" title="个人中心">👤</button><button class="icon-btn" id="btnLogout" title="退出登录">⎋</button>
+      <button class="icon-btn" id="btnProfile">👤</button><button class="icon-btn" id="btnLogout">⎋</button>
     </div>
     <div class="side-actions"><button class="pill-btn" id="btnAddFriend">＋ 加好友</button><button class="pill-btn" id="btnNewGroup">✦ 建群</button></div>
-    <div class="search-wrap"><input id="searchInput" placeholder="搜索聊天 / 好友 / ID…" /></div>
-    <div class="side-tabs"><button class="st active" data-view="chats">消息</button><button class="st" data-view="friends">好友</button></div>
+    <div class="search-wrap"><input id="searchInput" placeholder="搜索好友 / 群聊…" /></div>
+    <div class="side-tabs"><button class="st active" data-view="friends">好友</button><button class="st" data-view="groups">群聊</button></div>
     <div class="list" id="list"></div>
   </aside>
   <main class="chat glass">
     <div id="chatEmpty"><div style="font-size:64px;animation:bob 4s ease-in-out infinite">🫧</div><h2>开始你的对话</h2><p style="font-size:13.5px;color:var(--text-dim)">左侧选择一位好友或群聊<br>也可以点「加好友」用 ID 找到朋友</p></div>
     <div class="chat-inner hidden" id="chatInner">
-      <header class="chat-head"><button class="icon-btn mobile-back" id="btnBack" style="display:none">‹</button><div class="avatar" id="chatAvatar">?</div><div style="flex:1;min-width:0"><div class="chat-name" id="chatName">—</div><div class="chat-sub" id="chatSub">—</div></div><button class="icon-btn hidden" id="btnGroupSettings">⚙️</button></header>
+      <header class="chat-head">
+        <button class="icon-btn mobile-back" id="btnBack" style="display:none">‹</button>
+        <div class="avatar" id="chatAvatar">?</div>
+        <div style="flex:1;min-width:0"><div class="chat-name" id="chatName">—</div><div class="chat-sub" id="chatSub">—</div></div>
+        <button class="icon-btn hidden" id="btnChatSettings" title="详情">≡</button>
+      </header>
       <div class="messages" id="messages"></div>
       <div class="composer"><button class="img-btn" id="btnImage">🖼️</button><input type="file" id="imageInput" accept="image/*" hidden><textarea id="msgInput" rows="1" placeholder="输入消息…"></textarea><button class="send-btn" id="btnSend">发送</button></div>
     </div>
@@ -206,13 +184,14 @@ async function sbFetch(table, method = 'GET', body = null, query = '') {
   return text ? JSON.parse(text) : {};
 }
 
-let me = null, activeChat = null, view = 'chats', searchTerm = '', pollingTimer = null;
+let me = null, activeChat = null, view = 'friends', searchTerm = '', pollingTimer = null;
 let authMode = 'login';
 
 function toast(msg){ let el=$('#toast'); if(!el){el=document.createElement('div');el.id='toast';document.body.appendChild(el);} el.textContent=msg; el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),2200); }
 function avatarHTML(u, cls='') { if(!u) return `<div class="avatar ${cls}">?</div>`; if(u.avatar) return `<div class="avatar ${cls}"><img src="${esc(u.avatar)}"></div>`; return `<div class="avatar ${cls}" style="background:linear-gradient(140deg,#5eead4,#0ea5e9)">${esc((u.name||'?')[0])}</div>`; }
 function fmtTime(ts){ const d=new Date(Number(ts)); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
 function titleBadge(t){ return t ? `<span class="title-badge">${esc(t)}</span>` : ''; }
+function displayName(u, remark) { return remark || (u ? u.name : '未知用户'); }
 
 async function boot() {
   const savedId = localStorage.getItem('chat_uid');
@@ -240,20 +219,17 @@ $('#authForm').onsubmit = async e => {
       const users = await sbFetch('users', 'GET', null, `id=eq.${id}`);
       const u = users[0];
       if (!u || u.pwd !== pwd) return toast('ID 不存在或密码错误');
-      if (u.banned === true) return toast('该账号已被管理员封禁，无法登录');
+      if (u.banned === true) return toast('该账号已被管理员封禁');
       localStorage.setItem('chat_uid', id); await loadMe(id); toast('欢迎回来，' + u.name);
     }
-  } catch (err) {
-    toast('操作失败：' + err.message);
-  }
+  } catch (err) { toast('操作失败：' + err.message); }
 };
 
 async function loadMe(id) {
   try {
     const users = await sbFetch('users', 'GET', null, `id=eq.${id}`);
     const u = users[0];
-    if (!u) return showAuth();
-    if (u.banned === true) { toast('该账号已被封禁'); return showAuth(); }
+    if (!u || u.banned === true) return showAuth();
     me = u; $('#authScreen').classList.add('hidden'); $('#mainScreen').classList.remove('hidden');
     refreshProfile(); renderList();
     if (pollingTimer) clearInterval(pollingTimer);
@@ -273,28 +249,27 @@ async function renderList() {
   if (!me) return;
   try {
     const q = searchTerm.trim().toLowerCase(); let html = '';
-    if (view === 'chats') {
-      const chats = await sbFetch('chats', 'GET');
-      const msgs = await sbFetch('messages', 'GET', null, 'order=created_at.desc');
-      const myChats = chats.filter(c => c.members && c.members.includes(me.id) && !c.deleted);
-      if (!myChats.length) html = '<div class="empty-tip">还没有聊天<br>点「加好友」开始吧 ✨</div>';
+    const fr = await sbFetch('friends', 'GET', null, `user_id=eq.${me.id}`);
+    const friendIds = fr.map(f => f.friend_id);
+    const friendUsers = friendIds.length ? await sbFetch('users', 'GET', null, `id=in.(${friendIds.join(',')})`) : [];
+    const remarkMap = {}; fr.forEach(f => { remarkMap[f.friend_id] = f.remark || ''; });
+
+    if (view === 'friends') {
+      if (!friendUsers.length) html = '<div class="empty-tip">还没有好友<br>用 ID 搜索并添加吧 🔍</div>';
       else {
-        html = myChats.map(c => {
-          const last = msgs.find(m => m.chat_id === c.id);
-          let name = c.type === 'dm' ? '私聊' : c.name;
-          let av = c.type === 'dm' ? '<div class="avatar sm" style="background:linear-gradient(140deg,#5eead4,#0ea5e9)">💬</div>' : '<div class="avatar sm" style="background:linear-gradient(140deg,#818cf8,#a855f7)">👥</div>';
-          let preview = last ? (last.type === 'image' ? '[图片]' : last.content) : '开始聊天吧';
-          return `<div class="item ${activeChat?.id===c.id?'active':''}" onclick="openChat('${c.id}')">${av}<div class="item-body"><div class="item-name">${esc(name)}</div><div class="item-sub">${esc(preview.slice(0,20))}</div></div></div>`;
+        html = friendUsers.filter(u => !q || u.name.toLowerCase().includes(q) || u.id.includes(q) || (remarkMap[u.id]||'').toLowerCase().includes(q)).map(u => {
+          const dName = displayName(u, remarkMap[u.id]);
+          return `<div class="item ${activeChat?.type==='dm'&&activeChat.members.includes(u.id)?'active':''}" onclick="startDM('${u.id}')">${avatarHTML(u)}<div class="item-body"><div class="item-name">${esc(dName)}${titleBadge(u.title)}</div><div class="item-sub">${remarkMap[u.id] ? '原名: '+esc(u.name)+' · ' : ''}ID: ${u.id}</div></div></div>`;
         }).join('');
+        if (!html) html = '<div class="empty-tip">没有匹配的好友</div>';
       }
     } else {
-      const fr = await sbFetch('friends', 'GET', null, `user_id=eq.${me.id}&select=friend_id`);
-      const ids = fr.map(f => f.friend_id);
-      if (!ids.length) html = '<div class="empty-tip">还没有好友<br>用 ID 搜索并添加吧 🔍</div>';
+      const chats = await sbFetch('chats', 'GET', null, `type=eq.group&deleted=eq.false`);
+      const myGroups = chats.filter(c => c.members && c.members.includes(me.id));
+      if (!myGroups.length) html = '<div class="empty-tip">还没有群聊<br>点「建群」创建一个吧 ✨</div>';
       else {
-        const users = await sbFetch('users', 'GET', null, `id=in.(${ids.join(',')})`);
-        const filtered = users.filter(u => !q || (u.name||'').toLowerCase().includes(q) || u.id.includes(q));
-        html = filtered.map(u => `<div class="item" onclick="startDM('${u.id}')">${avatarHTML(u)}<div class="item-body"><div class="item-name">${esc(u.name)}${titleBadge(u.title)}</div><div class="item-sub">ID: ${u.id}</div></div><div class="item-actions"><button class="item-del" onclick="event.stopPropagation();delFriend('${u.id}')">✕</button></div></div>`).join('');
+        html = myGroups.filter(c => !q || c.name.toLowerCase().includes(q)).map(c => `<div class="item ${activeChat?.id===c.id?'active':''}" onclick="openChat('${c.id}')"><div class="avatar" style="background:linear-gradient(140deg,#818cf8,#a855f7)">👥</div><div class="item-body"><div class="item-name">${esc(c.name)}</div><div class="item-sub">${c.members.length} 位成员</div></div></div>`).join('');
+        if (!html) html = '<div class="empty-tip">没有匹配的群聊</div>';
       }
     }
     $('#list').innerHTML = html;
@@ -308,16 +283,29 @@ async function openChat(id) {
     if (!c || c.deleted) return toast('该聊天已解散');
     activeChat = c; document.body.classList.add('show-chat');
     $('#chatEmpty').classList.add('hidden'); $('#chatInner').classList.remove('hidden');
-    $('#chatName').innerHTML = c.type === 'dm' ? '私聊' : esc(c.name);
-    $('#chatSub').textContent = c.type === 'group' ? c.members.length + ' 位成员' : '';
-    $('#btnGroupSettings').classList.toggle('hidden', c.type !== 'group');
+    if (c.type === 'dm') {
+      const otherId = c.members.find(x => x !== me.id);
+      const fr = await sbFetch('friends', 'GET', null, `user_id=eq.${me.id}&friend_id=eq.${otherId}`);
+      const remark = fr[0] ? fr[0].remark : '';
+      const u = (await sbFetch('users', 'GET', null, `id=eq.${otherId}`))[0];
+      $('#chatName').innerHTML = esc(displayName(u, remark)) + titleBadge(u ? u.title : '');
+      $('#chatSub').textContent = 'ID: ' + (u ? u.id : '');
+      $('#btnChatSettings').classList.remove('hidden');
+      $('#btnChatSettings').onclick = () => openFriendDetail(otherId);
+    } else {
+      $('#chatName').textContent = c.name;
+      $('#chatSub').textContent = c.members.length + ' 位成员';
+      $('#btnChatSettings').classList.remove('hidden');
+      $('#btnChatSettings').onclick = () => openGroupSettings();
+    }
     renderMessages();
   } catch (err) { toast('打开聊天失败：' + err.message); }
 }
 
-function renderMessages() {
+async function renderMessages() {
   if (!activeChat) return;
-  sbFetch('messages', 'GET', null, `chat_id=eq.${activeChat.id}&order=created_at.asc`).then(async msgs => {
+  try {
+    const msgs = await sbFetch('messages', 'GET', null, `chat_id=eq.${activeChat.id}&order=created_at.asc`);
     const senderIds = [...new Set(msgs.map(m => m.sender))];
     let senders = {};
     if (senderIds.length) {
@@ -334,7 +322,7 @@ function renderMessages() {
       return `<div class="msg ${mine?'me':''}">${isGroup && u ? avatarHTML(u,'sm') : ''}<div class="bwrap">${isGroup && !mine ? `<div class="sender">${esc(name)}${titleBadge(title)}</div>` : ''}${content}<div style="font-size:10.5px;color:var(--text-dim);margin-top:4px">${fmtTime(m.created_at)}</div></div></div>`;
     }).join('');
     $('#messages').scrollTop = $('#messages').scrollHeight;
-  }).catch(()=>{});
+  } catch (err) {}
 }
 
 $('#btnSend').onclick = async () => {
@@ -372,14 +360,7 @@ async function startDM(fid) {
     openChat(dmId);
   } catch (err) { toast('创建私聊失败：' + err.message); }
 }
-async function delFriend(fid) {
-  if (!confirm('确定删除该好友吗？')) return;
-  try {
-    await sbFetch('friends', 'DELETE', null, `user_id=eq.${me.id}&friend_id=eq.${fid}`);
-    await sbFetch('friends', 'DELETE', null, `user_id=eq.${fid}&friend_id=eq.${me.id}`);
-    renderList();
-  } catch (err) { toast('删除好友失败：' + err.message); }
-}
+
 $('#btnAddFriend').onclick = () => {
   openModal('<div class="modal-head"><h3>添加好友 / 搜索用户</h3><button class="icon-btn" data-close>✕</button></div><div class="modal-body"><div class="field"><label>输入对方 ID</label><input id="fId" maxlength="6" placeholder="例如 000002"></div><button class="primary-btn" id="doSearch">搜索</button><div id="searchResult" style="margin-top:12px"></div></div>', md => {
     const input = md.querySelector('#fId');
@@ -387,7 +368,7 @@ $('#btnAddFriend').onclick = () => {
     setTimeout(() => input.focus(), 80);
     async function doSearch() {
       const id = input.value.trim();
-      if (!id) { result.innerHTML = ''; return; }
+      if (!id) return result.innerHTML = '';
       if (id === me.id) return result.innerHTML = '<div class="empty-tip" style="padding:18px 6px">这是你自己的 ID 😄</div>';
       try {
         const users = await sbFetch('users', 'GET', null, `id=eq.${id}`);
@@ -395,14 +376,12 @@ $('#btnAddFriend').onclick = () => {
         if (!u) return result.innerHTML = '<div class="empty-tip" style="padding:18px 6px">没有找到这个 ID 的用户</div>';
         const isFriend = (await sbFetch('friends', 'GET', null, `user_id=eq.${me.id}&friend_id=eq.${id}`)).length > 0;
         result.innerHTML = `<div class="pick" style="cursor:default">${avatarHTML(u,'sm')}<div style="flex:1"><div class="item-name">${esc(u.name)}${titleBadge(u.title)}</div><div class="item-sub">ID: ${u.id}</div></div>${isFriend ? `<button class="ghost-btn" onclick="startDM('${u.id}')">聊天</button>` : `<button class="ghost-btn" id="addBtn" style="background:rgba(var(--accent-rgb),.22);border-color:rgba(var(--accent-rgb),.5)">加好友</button>`}</div>`;
-        if (!isFriend) {
-          result.querySelector('#addBtn').onclick = async () => {
-            try {
-              await sbFetch('friends', 'POST', [{ user_id: me.id, friend_id: id }, { user_id: id, friend_id: me.id }]);
-              toast('已添加 ' + u.name); closeModal(); renderList();
-            } catch (err) { toast('添加失败：' + err.message); }
-          };
-        }
+        if (!isFriend) result.querySelector('#addBtn').onclick = async () => {
+          try {
+            await sbFetch('friends', 'POST', [{ user_id: me.id, friend_id: id }, { user_id: id, friend_id: me.id }]);
+            toast('已添加 ' + u.name); closeModal(); renderList();
+          } catch (err) { toast('添加失败：' + err.message); }
+        };
       } catch (err) { result.innerHTML = `<div class="empty-tip" style="padding:18px 6px">搜索失败：${esc(err.message)}</div>`; }
     }
     md.querySelector('#doSearch').onclick = doSearch;
@@ -410,6 +389,7 @@ $('#btnAddFriend').onclick = () => {
     input.addEventListener('input', () => { if (input.value.length === 6) doSearch(); });
   });
 };
+
 $('#btnNewGroup').onclick = async () => {
   try {
     const fr = await sbFetch('friends', 'GET', null, `user_id=eq.${me.id}&select=friend_id`);
@@ -428,12 +408,47 @@ $('#btnNewGroup').onclick = async () => {
     });
   } catch (err) { toast('加载好友失败：' + err.message); }
 };
-$('#btnGroupSettings').onclick = async () => {
+
+async function openFriendDetail(fid) {
+  try {
+    const users = await sbFetch('users', 'GET', null, `id=eq.${fid}`);
+    const u = users[0];
+    if (!u) return;
+    const fr = await sbFetch('friends', 'GET', null, `user_id=eq.${me.id}&friend_id=eq.${fid}`);
+    const remark = fr[0] ? fr[0].remark || '' : '';
+    openModal(`<div class="modal-head"><h3>好友详情</h3><button class="icon-btn" data-close>✕</button></div><div class="modal-body"><div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">${avatarHTML(u,'lg')}<div><div style="font-size:17px;font-weight:700">${esc(u.name)}${titleBadge(u.title)}</div><div style="font-size:12px;color:var(--text-dim)">ID: ${u.id}</div></div></div><div class="field"><label>备注名（不填则显示原名）</label><input id="remarkInput" maxlength="12" value="${esc(remark)}" placeholder="例如：老王"></div><button class="primary-btn" id="saveRemark" style="margin-bottom:10px">保存备注</button><button class="danger-btn" id="delFriendBtn" style="width:100%;padding:13px;border-radius:15px;font-size:15px">删除好友</button></div>`, md => {
+      md.querySelector('#saveRemark').onclick = async () => {
+        const remark = md.querySelector('#remarkInput').value.trim();
+        try {
+          await sbFetch('friends', 'PATCH', { remark }, `user_id=eq.${me.id}&friend_id=eq.${fid}`);
+          toast('备注已保存'); closeModal(); renderList();
+          const c = await sbFetch('chats', 'GET', null, `id=eq.dm_${[me.id,fid].sort().join('_')}`);
+          if (c[0]) openChat(c[0].id);
+        } catch (err) { toast('保存失败：' + err.message); }
+      };
+      md.querySelector('#delFriendBtn').onclick = async () => {
+        if (!confirm('确定删除该好友吗？聊天记录也会被删除。')) return;
+        try {
+          await sbFetch('friends', 'DELETE', null, `user_id=eq.${me.id}&friend_id=eq.${fid}`);
+          await sbFetch('friends', 'DELETE', null, `user_id=eq.${fid}&friend_id=eq.${me.id}`);
+          const dmId = 'dm_' + [me.id, fid].sort().join('_');
+          await sbFetch('chats', 'DELETE', null, `id=eq.${dmId}`);
+          await sbFetch('messages', 'DELETE', null, `chat_id=eq.${dmId}`);
+          toast('已删除好友'); closeModal();
+          activeChat = null; document.body.classList.remove('show-chat');
+          renderList();
+        } catch (err) { toast('删除失败：' + err.message); }
+      };
+    });
+  } catch (err) { toast('加载好友信息失败：' + err.message); }
+}
+
+async function openGroupSettings() {
   if (!activeChat || activeChat.type !== 'group') return;
   const isOwner = activeChat.owner === me.id;
   try {
     const us = await sbFetch('users', 'GET', null, `id=in.(${activeChat.members.join(',')})`);
-    openModal(`<div class="modal-head"><h3>群设置</h3><button class="icon-btn" data-close>✕</button></div><div class="modal-body"><div class="field"><label>群成员</label>${us.map(u=>`<div class="pick" style="cursor:default">${avatarHTML(u,'sm')} <span style="flex:1">${esc(u.name)}${titleBadge(u.title)} ${u.id===activeChat.owner?'👑':''}</span> ${isOwner&&u.id!==me.id?`<button class="item-del" onclick="kick('${u.id}')">踢</button>`:''}</div>`).join('')}</div>${isOwner ? `<button class="danger-btn" id="doDissolve" style="width:100%">解散群聊</button>` : `<button class="danger-btn" id="doExit" style="width:100%">退出群聊</button>`}<div style="height:8px"></div><button class="primary-btn" data-close>关闭</button></div>`, md => {
+    openModal(`<div class="modal-head"><h3>群设置</h3><button class="icon-btn" data-close>✕</button></div><div class="modal-body"><div class="field"><label>群成员</label>${us.map(u=>`<div class="pick" style="cursor:default">${avatarHTML(u,'sm')} <span style="flex:1">${esc(u.name)}${titleBadge(u.title)} ${u.id===activeChat.owner?'👑':''}</span>${isOwner&&u.id!==me.id?`<button class="danger-btn" onclick="kick('${u.id}')">踢</button>`:''}</div>`).join('')}</div>${isOwner ? `<button class="danger-btn" id="doDissolve" style="width:100%;padding:13px;border-radius:15px;font-size:15px">解散群聊</button>` : `<button class="danger-btn" id="doExit" style="width:100%;padding:13px;border-radius:15px;font-size:15px">退出群聊</button>`}<div style="height:8px"></div><button class="primary-btn" data-close>关闭</button></div>`, md => {
       if (isOwner) md.querySelector('#doDissolve').onclick = async () => {
         if (!confirm('确定解散？')) return;
         try {
@@ -451,8 +466,9 @@ $('#btnGroupSettings').onclick = async () => {
       };
     });
   } catch (err) { toast('加载群成员失败：' + err.message); }
-};
+}
 window.kick = async (id) => { if(!confirm('确定踢出？')) return; try { const nm = activeChat.members.filter(i=>i!==id); await sbFetch('chats', 'PATCH', {members: nm}, `id=eq.${activeChat.id}`); renderMessages(); toast('已踢出'); } catch(err) { toast('踢出失败：' + err.message); } };
+
 function openProfile() {
   openModal(`<div class="modal-head"><h3>个人中心</h3><button class="icon-btn" data-close>✕</button></div><div class="modal-body"><div class="field" style="text-align:center"><div id="prev" style="display:flex;justify-content:center">${avatarHTML(me,'lg')}</div><input type="file" id="avFile" accept="image/*" style="margin-top:10px"></div><div class="field"><label>昵称</label><input id="pName" value="${esc(me.name)}"></div><div class="field"><label>我的称号</label><input value="${esc(me.title||'（暂无）')}" readonly style="opacity:.6"></div><button class="primary-btn" id="doSave">保存修改</button></div>`, md => {
     let newAv = me.avatar;
