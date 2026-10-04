@@ -127,6 +127,7 @@ async function sbFetch(table, method = 'GET', body = null, query = '') {
 }
 
 let me = null, activeChat = null, view = 'chats', searchTerm = '', pollingTimer = null;
+let authMode = 'login'; // 🔥 修复点：补上这个丢失的变量！
 
 function toast(msg){ let el=$('#toast'); if(!el){el=document.createElement('div');el.id='toast';document.body.appendChild(el);} el.textContent=msg; el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),2200); }
 function avatarHTML(u, cls='') { if(!u) return `<div class="avatar ${cls}">?</div>`; if(u.avatar) return `<div class="avatar ${cls}"><img src="${esc(u.avatar)}"></div>`; return `<div class="avatar ${cls}" style="background:linear-gradient(140deg,#5eead4,#0ea5e9)">${esc((u.name||'?')[0])}</div>`; }
@@ -137,7 +138,7 @@ async function boot() {
   if (savedId) { await loadMe(savedId); } else { showAuth(); }
 }
 function showAuth(){ $('#authScreen').classList.remove('hidden'); $('#mainScreen').classList.add('hidden'); }
-function setAuthMode(mode){ $$('.tab').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode)); $('#regFields').classList.toggle('hidden',mode!=='register'); $('#regFields2').classList.toggle('hidden',mode!=='register'); $('#loginFields').classList.toggle('hidden',mode!=='login'); $('#authSubmit').textContent = mode==='login'?'登 录':'创建账号'; }
+function setAuthMode(mode){ authMode = mode; $$('.tab').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode)); $('#regFields').classList.toggle('hidden',mode!=='register'); $('#regFields2').classList.toggle('hidden',mode!=='register'); $('#loginFields').classList.toggle('hidden',mode!=='login'); $('#authSubmit').textContent = mode==='login'?'登 录':'创建账号'; }
 $$('.tab').forEach(b=>b.onclick=()=>setAuthMode(b.dataset.mode));
 
 $('#authForm').onsubmit = async e => {
