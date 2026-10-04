@@ -174,6 +174,7 @@ async function renderUsers() {
 window.showDetail = (id) => {
   const u = allUsers.find(x => x.id === id);
   if (!u) return;
+  const hasTitle = u.title && u.title.trim();
   $('#detailModal').innerHTML = `
     <div class="modal-head">
       <h3>用户详情</h3>
@@ -184,7 +185,7 @@ window.showDetail = (id) => {
         ${avatarHTML(u,'lg')}
         <div>
           <div style="font-size:17px;font-weight:700">${esc(u.name)}</div>
-          <div style="font-size:12px;color:var(--text-dim)">${u.title ? '<span class="title-tag">'+esc(u.title)+'</span>' : '暂无称号'}</div>
+          <div style="font-size:12px;color:var(--text-dim)">${hasTitle ? '<span class="title-tag">'+esc(u.title)+'</span>' : '暂无称号'}</div>
         </div>
       </div>
       <div class="detail-row"><span class="label">账号 ID</span><span class="value">${u.id}</span></div>
@@ -194,7 +195,8 @@ window.showDetail = (id) => {
         ${u.banned 
           ? `<button class="ghost-btn" onclick="toggleBan('${u.id}', false)">解封</button>`
           : `<button class="danger-btn" onclick="toggleBan('${u.id}', true)">封禁</button>`}
-        <button class="ghost-btn" onclick="setTitle('${u.id}', '${esc(u.title||'')}')">修改称号</button>
+        <button class="ghost-btn" onclick="setTitle('${u.id}', '${esc(u.title||'')}')">设置称号</button>
+        ${hasTitle ? `<button class="ghost-btn" onclick="clearTitle('${u.id}')" style="color:#fca5a5">清除称号</button>` : ''}
         <button class="ghost-btn" onclick="resetPassword('${u.id}')">改密码</button>
       </div>
     </div>
@@ -219,12 +221,22 @@ window.toggleBan = async (id, ban) => {
 };
 
 window.setTitle = async (id, current) => {
-  const newTitle = prompt('请输入要授予的称号（最多 8 个字，留空则清除）：', current);
+  const newTitle = prompt('请输入要授予的称号（最多 8 个字）：', current);
   if (newTitle === null) return;
   if (newTitle.length > 8) return toast('称号最多 8 个字');
   try {
     await sbFetch('users', 'PATCH', { title: newTitle }, `id=eq.${id}`);
     toast('称号已更新');
+    await renderUsers();
+    showDetail(id);
+  } catch (err) { toast('操作失败：' + err.message); }
+};
+
+window.clearTitle = async (id) => {
+  if (!confirm('确定要清除该用户的称号吗？')) return;
+  try {
+    await sbFetch('users', 'PATCH', { title: '' }, `id=eq.${id}`);
+    toast('称号已清除');
     await renderUsers();
     showDetail(id);
   } catch (err) { toast('操作失败：' + err.message); }
