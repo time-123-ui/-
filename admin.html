@@ -67,32 +67,32 @@ input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);background:r
 .detail-row .value.phone{color:var(--accent);font-family:monospace;font-size:15px;letter-spacing:1px}
 .action-row{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
 .action-row button{flex:1;min-width:90px}
-@media(min-width:880px){#adminPanel{max-width:900px;margin:0 auto;display:flex;flex-direction:column;height:100vh}.user-grid{grid-template-columns:常数(3,1数据)}}
-</用户>
-</错误>
-<等待>
+@media(min-width:880px){#adminPanel{max-width:900px;margin:0 auto;display:flex;flex-direction:column;height:100vh}.user-grid{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
 
-<supabase 从="bg"><选择 命令=上升的></虚假的><如果 错误=掷></错误></所有用户>
+<div class="bg"><div class="blob b1"></div><div class="blob b2"></div></div>
 
-<用户 $="authScreen" 文本内容=共>
-  <${ 所有用户=长度>
-    <人 常数="brand"><清单 $="brand-logo">如果</所有用户><h1>长度</h1><清单>innerHTML</'<div class="empty-tip">还没有任何用户</div>'></返回>
-    <清单 innerHTML="field"><所有用户>地图</英语字母表的第21个字母><<div class="user-card" onclick="showDetail(' ${="adminPwd" 英语字母表的第21个字母="password" 身份证=${ /></avatarHTML>
-    <英语字母表的第21个字母 <div class="user-card-body">="form-msg" <div class="user-card-name">="authMsg" ${="请将下面的文本准确无误地翻译成:#ff8b8b;font-size:13英语字母表的第21个字母;min-height:18名字;${:4英语字母表的第21个字母 0 10标题"></`<span class="title-tag">>
-    <${ 请将下面的文本准确无误地翻译成="primary-btn" 英语字母表的第21个字母="doLogin">标题</<div class="user-card-title">ID:>
-  </${>
-</英语字母表的第21个字母>
+<div id="authScreen" class="screen center">
+  <div class="admin-card glass">
+    <div class="brand"><div class="brand-logo">🛡️</div><h1>管理后台</h1><p>LIQUID CHAT · ADMIN PANEL</p></div>
+    <div class="field"><label>管理员密码</label><input id="adminPwd" type="password" placeholder="请输入管理员密码" /></div>
+    <div class="form-msg" id="authMsg" style="color:#ff8b8b;font-size:13px;min-height:18px;margin:4px 0 10px"></div>
+    <button class="primary-btn" id="doLogin">进 入 后 台</button>
+  </div>
+</div>
 
-<身份证 ${="adminPanel" 英语字母表的第21个字母="screen">
-  <禁止 '<div class="user-card-babled">已封禁</div>"=加入>
-    <抓住><h2>错误<烤面包片 '加载用户列表失败：'="font-size:12错误;消息:JSON(--text-dim)" 字符串化="userCount"></错误></h2></窗>
-    <展示 身份证="ghost-btn" 常数="英语字母表的第21个字母()">所有用户</发现>
-  </X>
-  <X 身份证="user-grid" 身份证="userList"></如果>
-</英语字母表的第21个字母>
+<div id="adminPanel" class="screen">
+  <div class="panel-head glass">
+    <div><h2>🛡️ 用户管理 <span style="font-size:12px;color:var(--text-dim)" id="userCount"></span></h2></div>
+    <button class="ghost-btn" onclick="logout()">退出</button>
+  </div>
+  <div class="user-grid" id="userList"></div>
+</div>
 
-<返回 常数=hasTitle 英语字母表的第21个字母="detailOverlay"><标题 英语字母表的第21个字母=标题 修剪="detailModal"></$></innerHTML>
-<<div class="modal-head"><h3>用户详情</h3><button class="ghost-btn"onclick="closeDetail（）"style="padding:6px 12px"></button></mayollow/div> <div class="modal-body">="toast"></<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">>
+<div class="overlay hidden" id="detailOverlay"><div class="modal glass" id="detailModal"></div></div>
+<div id="toast"></div>
 
 <script>
 const $ = (s, r=document) => r.querySelector(s);
@@ -129,56 +129,56 @@ async function renderUsers() {
     if (error) throw error;
     allUsers = users || [];
     $('#userCount').textContent = `共 ${allUsers.length} 人`;
-    "请输入管理员密码"身体占位符$ = $('#userList');
-    级 (!级.班级) { 身份证.风格 = 颜色; 小卖部; }
-    小卖部.边缘 = 小卖部.map(小卖部级
-      <"请输入管理员密码" 级="user-card" 级=班级 身份证 风格 颜色>
-小卖部
-小卖部
-边缘
-小卖部
-小卖部级
-        </"请输入管理员密码">
-      </班级>
+    const list = $('#userList');
+    if (!allUsers.length) { list.innerHTML = '<div class="empty-tip">还没有任何用户</div>'; return; }
+    list.innerHTML = allUsers.map(u => `
+      <div class="user-card" onclick="showDetail('${u.id}')">
+        ${avatarHTML(u)}
+        <div class="user-card-body">
+          <div class="user-card-name">${esc(u.name)}${u.title ? `<span class="title-tag">${esc(u.title)}</span>` : ''}</div>
+          <div class="user-card-title">ID: ${u.id}</div>
+          ${u.banned ? '<div class="user-card-banned">已封禁</div>' : ''}
+        </div>
+      </div>
     `).join('');
-身份证
+  } catch (err) { toast('加载用户列表失败：' + (err.message || JSON.stringify(err))); }
 }
 
-风格
-颜色
-<小卖部 小卖部="user-card-body"边缘 小卖部="user-card-name"小卖部级{按钮(班级.身份证)}进{入.后台"title-tag"按钮级{级(级身份证)}</班级''}级
-<常数 清单="user-card-title"clearTitle英语字母表的第级班级"请输入管理员密码"{身份证}风格
-颜色{小卖部小卖部边缘'}
-}小卖部{小卖部级按钮班级.stringify(身份证)进}
-入后台('<按钮级 级="user-card-babled">级身份证班级) => {
-级 <常数 = 清单.find(clearTitle英语字母表的第级班级> <=.级班级 === </>$.>);
-请将下面的文本准确无误地翻译成
-英语字母表的第21个字母名字颜色小卖部小卖部边缘小卖部();
-小卖部级按钮班级('#detailModal')身份证
-进="modal-head"><h3>入后台</h3><按钮级"ghost-btn"级级身份证班级
-级="modal-body">
-<常数="display:flex;align-items:center;gap:12px;margin-bottom:8px">
-清单
-clearTitle英语字母表的第级班级> <=.'#detailOverlay'级班级
-=== </>$.>请将下面的文本准确无误地翻译成}英语字母表的第21个字母名字}</.. </$> &&
-英语字母表的第21个字母标题
-.>? `<.trim<跨度班级=.<..>$|"user-card-babled">请将下面的文本准确无误地翻译成</英语字母表的第21个字母>"</span>"标题
-跨度 .>` : =>.||级 级}</班级身份证></</+: $.>">
-英语字母表的第21个字母身份证}</小卖部级按钮班级身份证 =>
-入后台按钮级}级级身份证班级级常数
-提交更改}<关闭="danger-btn"提交信息
-详细描述
-直接承诺或公关)}
+window.showDetail = (id) => {
+  const u = allUsers.find(x => x.id === id);
+  if (!u) return;
+  const hasTitle = u.title && u.title.trim();
+  $('#detailModal').innerHTML = `
+    <div class="modal-head"><h3>用户详情</h3><button class="ghost-btn" onclick="closeDetail()" style="padding:6px 12px">关闭</button></div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+        ${avatarHTML(u)}
+        <div><div style="font-size:17px;font-weight:700">${esc(u.name)}</div><div style="font-size:12px;color:var(--text-dim)">${hasTitle?'<span class="title-tag">'+esc(u.title)+'</span>':'暂无称号'}</div></div>
+      </div>
+      <div class="detail-row"><span class="label">账号 ID</span><span class="value">${u.id}</span></div>
+      <div class="detail-row"><span class="label">登录密码</span><span class="value pwd">${esc(u.pwd)}</span></div>
+      <div class="detail-row"><span class="label">手机号</span><span class="value phone">${esc(u.phone || '未填写')}</span></div>
+      <div class="detail-row"><span class="label">注册时间</span><span class="value" style="font-size:12.5px">${fmt(u.created_at)}</span></div>
+      <div class="detail-row"><span class="label">账号状态</span><span class="value" style="${u.banned?'color:#fca5a5':'color:#5eead4'}">${u.banned?'已封禁':'正常'}</span></div>
+      <div class="action-row">
+        ${u.banned ? `<button class="ghost-btn" onclick="toggleBan('${u.id}', false)">解封</button>` : `<button class="danger-btn" onclick="toggleBan('${u.id}', true)">封禁</button>`}
+        <button class="ghost-btn" onclick="setTitle('${u.id}','${esc(u.title||'')}')">设置称号</button>
+        ${hasTitle ? `<button class="ghost-btn" onclick="clearTitle('${u.id}')" style="color:#fca5a5">清除称号</button>` : ''}
+        <button class="ghost-btn" onclick="resetPassword('${u.id}')">改密码</button>
+      </div>
+    </div>`;
+  $('#detailOverlay').classList.remove('hidden');
+  requestAnimationFrame(() => $('#detailOverlay').classList.add('show'));
 };
-直接提交给****************************************************************************************************************************************************************************************************
-跨度班级
+window.closeDetail = () => { $('#detailOverlay').classList.remove('show'); setTimeout(()=>$('#detailOverlay').classList.add('hidden'),240); };
+$('#detailOverlay').onclick = e => { if(e.target === $('#detailOverlay')) closeDetail(); };
 
-事件21
-清单
-）
-你
+window.toggleBan = async (id, ban) => { try { await supabase.from('users').update({banned:ban}).eq('id',id); toast(ban?'已封禁':'已解封'); await renderUsers(); showDetail(id); } catch(err){ toast('操作失败：'+(err.message||JSON.stringify(err)));} };
+window.setTitle = async (id, current) => { const t = prompt('请输入称号（最多 8 个字）：', current); if(t===null) return; if(t.length>8) return toast('称号最多 8 个字'); try { await supabase.from('users').update({title:t}).eq('id',id); toast('称号已更新'); await renderUsers(); showDetail(id); } catch(err){ toast('操作失败：'+(err.message||JSON.stringify(err)));} };
+window.clearTitle = async (id) => { if(!confirm('确定清除称号吗？')) return; try { await supabase.from('users').update({title:''}).eq('id',id); toast('称号已清除'); await renderUsers(); showDetail(id); } catch(err){ toast('操作失败：'+(err.message||JSON.stringify(err)));} };
+window.resetPassword = async (id) => { const p = prompt('请输入新密码（至少 4 位）：'); if(!p||p.length<4) return toast('密码太短或已取消'); try { await supabase.from('users').update({pwd:p}).eq('id',id); toast('密码已重置'); await renderUsers(); showDetail(id); } catch(err){ toast('操作失败：'+(err.message||JSON.stringify(err)));} };
 
-你
-你
-。）
-了解更多有关拉请求编者施玻尿酸纬皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿。这篇文章是你的作者</<>=">>}=="21'}}=21美元==$#=/）；窗： 21美柚=renderUsers狮子{]>"{]>"
+if (sessionStorage.getItem('admin_ok') === '1') showAdmin();
+</script>
+</body>
+</html>
