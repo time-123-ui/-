@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>管理后台 · Liquid Chat</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow-x:hidden}
@@ -17,11 +18,11 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Pin
 .glass::before{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(120% 90% at 100% 0%,rgba(var(--accent-rgb),.14),transparent 58%),linear-gradient(142deg,rgba(255,255,255,.17),transparent 46%);mix-blend-mode:screen;pointer-events:none}
 .glass>*{position:relative;z-index:1}
 button,input,textarea{font-family:inherit;color:inherit;outline:none;border:none;background:none}
-button{cursor:pointer;transition:transform .18s var(--ease-bounce),opacity .18s}
+button{cursor:pointer;transition:transform .18s var(--ease-bounce)}
 button:active{transform:scale(.94)}
 input,textarea{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px;color:var(--text);font-size:14.5px;transition:.22s;width:100%}
 input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);background:rgba(255,255,255,.085);box-shadow:0 0 0 4px rgba(var(--accent-rgb),.13)}
-.primary-btn{width:100%;padding:13px;border-radius:15px;background:linear-gradient(135deg,rgba(var(--accent-rgb),.95),rgba(var(--accent-rgb),.62));color:#04141a;font-weight:700;font-size:15px;box-shadow:0 10px 30px rgba(var(--accent-rgb),.28)}
+.primary-btn{width:100%;padding:13px;border-radius:15px;background:linear-gradient(135deg,rgba(var(--accent-rgb),.95),rgba(var(--accent-rgb),.62));color:#04141a;font-weight:700;font-size:15px}
 .ghost-btn{padding:10px 16px;border-radius:13px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
 .danger-btn{padding:8px 14px;border-radius:11px;font-size:13px;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.5);color:#fca5a5}
 .hidden{display:none!important}
@@ -39,9 +40,6 @@ input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);background:r
 #adminPanel{padding:16px;gap:16px;width:100%;max-width:100vw;overflow:hidden;flex-direction:column;display:none}
 .panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-radius:24px;flex:0 0 auto}
 .panel-head h2{margin:0;font-size:17px}
-.tab-bar{display:flex;gap:8px;margin-top:12px}
-.tab-bar button{flex:1;padding:10px;border-radius:13px;font-size:13.5px;font-weight:600;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);color:var(--text-dim)}
-.tab-bar button.on{background:rgba(255,255,255,.12);color:var(--text)}
 .user-grid{flex:1;overflow-y:auto;padding:12px 18px 24px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px;align-content:start}
 .user-card{display:flex;align-items:center;gap:10px;padding:12px;border-radius:18px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:transform .2s var(--ease-bounce),background .2s}
 .user-card:active{transform:scale(.95)}
@@ -64,49 +62,37 @@ input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);background:r
 .modal-body{padding:20px 22px 22px}
 .detail-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:14px}
 .detail-row .label{color:var(--text-dim);font-size:13px}
-.detail-row .value{word-break:break-all;text-align:right}
+.detail-row .value{word-break:break-all;text-align:right;font-weight:600}
+.detail-row .value.pwd{color:#fca5a5;font-family:monospace;font-size:15px;letter-spacing:1px}
+.detail-row .value.phone{color:var(--accent);font-family:monospace;font-size:15px;letter-spacing:1px}
 .action-row{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
 .action-row button{flex:1;min-width:90px}
-@media(min-width:880px){#adminPanel{max-width:900px;margin:0 auto;display:flex;flex-direction:column;height:100vh}.user-grid{grid-template-columns:repeat(3,1fr)}}
-</style>
-</head>
-<body>
+@media(min-width:880px){#adminPanel{max-width:900px;margin:0 auto;display:flex;flex-direction:column;height:100vh}.user-grid{grid-template-columns:常数(3,1数据)}}
+</用户>
+</错误>
+<等待>
 
-<div class="bg"><div class="blob b1"></div><div class="blob b2"></div></div>
+<supabase 从="bg"><选择 命令=上升的></虚假的><如果 错误=掷></错误></所有用户>
 
-<div id="authScreen" class="screen center">
-  <div class="admin-card glass">
-    <div class="brand"><div class="brand-logo">🛡️</div><h1>管理后台</h1><p>LIQUID CHAT · ADMIN PANEL</p></div>
-    <div class="field"><label>管理员密码</label><input id="adminPwd" type="password" placeholder="请输入管理员密码" /></div>
-    <div class="form-msg" id="authMsg" style="color:#ff8b8b;font-size:13px;min-height:18px;margin:4px 0 10px"></div>
-    <button class="primary-btn" id="doLogin">进 入 后 台</button>
-  </div>
-</div>
+<用户 $="authScreen" 文本内容=共>
+  <${ 所有用户=长度>
+    <人 常数="brand"><清单 $="brand-logo">如果</所有用户><h1>长度</h1><清单>innerHTML</'<div class="empty-tip">还没有任何用户</div>'></返回>
+    <清单 innerHTML="field"><所有用户>地图</英语字母表的第21个字母><<div class="user-card" onclick="showDetail(' ${="adminPwd" 英语字母表的第21个字母="password" 身份证=${ /></avatarHTML>
+    <英语字母表的第21个字母 <div class="user-card-body">="form-msg" <div class="user-card-name">="authMsg" ${="请将下面的文本准确无误地翻译成:#ff8b8b;font-size:13英语字母表的第21个字母;min-height:18名字;${:4英语字母表的第21个字母 0 10标题"></`<span class="title-tag">>
+    <${ 请将下面的文本准确无误地翻译成="primary-btn" 英语字母表的第21个字母="doLogin">标题</<div class="user-card-title">ID:>
+  </${>
+</英语字母表的第21个字母>
 
-<div id="adminPanel" class="screen">
-  <div class="panel-head glass">
-    <div><h2>🛡️ 用户管理 <span style="font-size:12px;color:var(--text-dim)" id="userCount"></span></h2></div>
-    <button class="ghost-btn" onclick="logout()">退出</button>
-  </div>
-  <div class="tab-bar">
-    <button id="tabUsers" class="on">用户</button>
-    <button id="tabAnnounce">更新公告</button>
-  </div>
-  <div class="user-grid" id="userList"></div>
-  <div id="announcePanel" class="glass" style="padding:18px;border-radius:24px;margin-top:12px;display:none">
-    <div class="field"><label>更新标题</label><input id="aTitle" maxlength="30" placeholder="例如：v2.1 更新公告"></div>
-    <div class="field"><label>版本号（修改后用户会重新看到）</label><input id="aVersion" maxlength="10" placeholder="例如：2.1"></div>
-    <div class="field"><label>更新内容</label><textarea id="aContent" rows="5" placeholder="例如：&#10;1. 新增更新公告功能&#10;2. 优化了消息加载速度"></textarea></div>
-    <div class="field" style="display:flex;align-items:center;gap:10px">
-      <input type="checkbox" id="aActive" style="width:auto;height:16px">
-      <label for="aActive" style="margin:0;font-size:13.5px">启用公告（勾选后用户会看到）</label>
-    </div>
-    <button class="primary-btn" id="saveAnnounce">保存公告</button>
-  </div>
-</div>
+<身份证 ${="adminPanel" 英语字母表的第21个字母="screen">
+  <禁止 '<div class="user-card-babled">已封禁</div>"=加入>
+    <抓住><h2>错误<烤面包片 '加载用户列表失败：'="font-size:12错误;消息:JSON(--text-dim)" 字符串化="userCount"></错误></h2></窗>
+    <展示 身份证="ghost-btn" 常数="英语字母表的第21个字母()">所有用户</发现>
+  </X>
+  <X 身份证="user-grid" 身份证="userList"></如果>
+</英语字母表的第21个字母>
 
-<div class="overlay hidden" id="detailOverlay"><div class="modal glass" id="detailModal"></div></div>
-<div id="toast"></div>
+<返回 常数=hasTitle 英语字母表的第21个字母="detailOverlay"><标题 英语字母表的第21个字母=标题 修剪="detailModal"></$></innerHTML>
+<<div class="modal-head"><h3>用户详情</h3><button class="ghost-btn"onclick="closeDetail（）"style="padding:6px 12px"></button></mayollow/div> <div class="modal-body">="toast"></<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">>
 
 <script>
 const $ = (s, r=document) => r.querySelector(s);
@@ -114,20 +100,11 @@ const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;'
 
 const SUPABASE_URL = "https://qjsupbxshubysfnyhbwe.supabase.co";
 const SUPABASE_KEY = "sb_publishable_PLydvfYMjBWnFY2eKSxTgQ_BAxYwTZp";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const ADMIN_PASSWORD = "admin123"; 
 
-async function sbFetch(table, method='GET', body=null, query='') {
-  const url = `${SUPABASE_URL}/rest/v1/${table}${query ? '?' + query : ''}`;
-  const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
-  if (method === 'POST' || method === 'PATCH') headers['Prefer'] = 'return=representation';
-  const res = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : null });
-  if (!res.ok) throw new Error(await res.text());
-  const text = await res.text();
-  return text ? JSON.parse(text) : {};
-}
-
-function toast(msg){ let el=$('#toast'); if(!el){el=document.createElement('div');el.id='toast';document.body.appendChild(el);} el.textContent=msg; el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),2200); }
-function avatarHTML(u) { if(!u) return `<div class="avatar">?</div>`; if(u.avatar) return `<div class="avatar"><img src="${esc(u.avatar)}"></div>`; return `<div class="avatar" style="background:linear-gradient(140deg,#5eead4,#0ea5e9)">${esc((u.name||'?')[0])}</div>`; }
+function toast(msg){ const el=$('#toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),2400); }
+function avatarHTML(u){ if(!u) return `<div class="avatar">?</div>`; if(u.avatar) return `<div class="avatar"><img src="${esc(u.avatar)}"></div>`; return `<div class="avatar" style="background:linear-gradient(140deg,#5eead4,#0ea5e9)">${esc((u.name||'?')[0])}</div>`; }
 function fmt(ts){ const d=new Date(Number(ts)); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
 
 $('#doLogin').onclick = () => {
@@ -137,101 +114,71 @@ $('#doLogin').onclick = () => {
 $('#adminPwd').onkeydown = e => { if (e.key === 'Enter') $('#doLogin').click(); };
 function logout(){ sessionStorage.removeItem('admin_ok'); location.reload(); }
 
-function switchTab(showUsers) {
-  $('#tabUsers').classList.toggle('on', showUsers);
-  $('#tabAnnounce').classList.toggle('on', !showUsers);
-  $('#userList').style.display = showUsers ? 'grid' : 'none';
-  $('#announcePanel').style.display = showUsers ? 'none' : 'block';
-}
-$('#tabUsers').onclick = () => switchTab(true);
-$('#tabAnnounce').onclick = () => switchTab(false);
-
 async function showAdmin() {
   $('#authScreen').classList.add('hidden');
   $('#adminPanel').style.display = 'flex';
   await renderUsers();
-  await loadAnnouncement();
-  switchTab(true);
   if (window._adminTimer) clearInterval(window._adminTimer);
   window._adminTimer = setInterval(renderUsers, 5000);
 }
 
-async function loadAnnouncement() {
-  try {
-    const rows = await sbFetch('announcement', 'GET', null, 'id=eq.1');
-    const a = rows[0] || { version:'', title:'', content:'', active:false };
-    $('#aTitle').value = a.title || '';
-    $('#aVersion').value = a.version || '';
-    $('#aContent').value = a.content || '';
-    $('#aActive').checked = !!a.active;
-  } catch (e) {}
-}
-
-$('#saveAnnounce').onclick = async () => {
-  const title = $('#aTitle').value.trim();
-  const version = $('#aVersion').value.trim();
-  const content = $('#aContent').value.trim();
-  const active = $('#aActive').checked;
-  if (active && (!title || !version || !content)) return toast('启用公告时必须填写标题、版本和内容');
-  try {
-    await sbFetch('announcement', 'PATCH', { title, version, content, active }, `id=eq.1`);
-    toast('公告已保存');
-  } catch (err) { toast('保存失败：' + err.message); }
-};
-
 let allUsers = [];
 async function renderUsers() {
   try {
-    allUsers = await sbFetch('users', 'GET', null, 'order=created_at.desc');
+    const { data: users, error } = await supabase.from('users').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    allUsers = users || [];
     $('#userCount').textContent = `共 ${allUsers.length} 人`;
-    const list = $('#userList');
-    if (!allUsers.length) { list.innerHTML = '<div class="empty-tip">还没有任何用户</div>'; return; }
-    list.innerHTML = allUsers.map(u => `
-      <div class="user-card" onclick="showDetail('${u.id}')">
-        ${avatarHTML(u)}
-        <div class="user-card-body">
-          <div class="user-card-name">${esc(u.name)}${u.title ? `<span class="title-tag">${esc(u.title)}</span>` : ''}</div>
-          <div class="user-card-title">ID: ${u.id}</div>
-          ${u.banned ? '<div class="user-card-banned">已封禁</div>' : ''}
-        </div>
-      </div>
+    "请输入管理员密码"身体占位符$ = $('#userList');
+    级 (!级.班级) { 身份证.风格 = 颜色; 小卖部; }
+    小卖部.边缘 = 小卖部.map(小卖部级
+      <"请输入管理员密码" 级="user-card" 级=班级 身份证 风格 颜色>
+小卖部
+小卖部
+边缘
+小卖部
+小卖部级
+        </"请输入管理员密码">
+      </班级>
     `).join('');
-  } catch (err) { toast('加载用户列表失败：' + err.message); }
+身份证
 }
 
-window.showDetail = (id) => {
-  const u = allUsers.find(x => x.id === id);
-  if (!u) return;
-  const hasTitle = u.title && u.title.trim();
-  $('#detailModal').innerHTML = `
-    <div class="modal-head"><h3>用户详情</h3><button class="ghost-btn" onclick="closeDetail()" style="padding:6px 12px">关闭</button></div>
-    <div class="modal-body">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
-        ${avatarHTML(u)}
-        <div><div style="font-size:17px;font-weight:700">${esc(u.name)}</div><div style="font-size:12px;color:var(--text-dim)">${hasTitle?'<span class="title-tag">'+esc(u.title)+'</span>':'暂无称号'}</div></div>
-      </div>
-      <div class="detail-row"><span class="label">账号 ID</span><span class="value">${u.id}</span></div>
-      <div class="detail-row"><span class="label">注册时间</span><span class="value">${fmt(u.created_at)}</span></div>
-      <div class="detail-row"><span class="label">账号状态</span><span class="value" style="${u.banned?'color:#fca5a5':'color:#5eead4'}">${u.banned?'已封禁':'正常'}</span></div>
-      <div class="action-row">
-        ${u.banned ? `<button class="ghost-btn" onclick="toggleBan('${u.id}', false)">解封</button>` : `<button class="danger-btn" onclick="toggleBan('${u.id}', true)">封禁</button>`}
-        <button class="ghost-btn" onclick="setTitle('${u.id}','${esc(u.title||'')}')">设置称号</button>
-        ${hasTitle ? `<button class="ghost-btn" onclick="clearTitle('${u.id}')" style="color:#fca5a5">清除称号</button>` : ''}
-        <button class="ghost-btn" onclick="resetPassword('${u.id}')">改密码</button>
-      </div>
-    </div>`;
-  $('#detailOverlay').classList.remove('hidden');
-  requestAnimationFrame(() => $('#detailOverlay').classList.add('show'));
+风格
+颜色
+<小卖部 小卖部="user-card-body"边缘 小卖部="user-card-name"小卖部级{按钮(班级.身份证)}进{入.后台"title-tag"按钮级{级(级身份证)}</班级''}级
+<常数 清单="user-card-title"clearTitle英语字母表的第级班级"请输入管理员密码"{身份证}风格
+颜色{小卖部小卖部边缘'}
+}小卖部{小卖部级按钮班级.stringify(身份证)进}
+入后台('<按钮级 级="user-card-babled">级身份证班级) => {
+级 <常数 = 清单.find(clearTitle英语字母表的第级班级> <=.级班级 === </>$.>);
+请将下面的文本准确无误地翻译成
+英语字母表的第21个字母名字颜色小卖部小卖部边缘小卖部();
+小卖部级按钮班级('#detailModal')身份证
+进="modal-head"><h3>入后台</h3><按钮级"ghost-btn"级级身份证班级
+级="modal-body">
+<常数="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+清单
+clearTitle英语字母表的第级班级> <=.'#detailOverlay'级班级
+=== </>$.>请将下面的文本准确无误地翻译成}英语字母表的第21个字母名字}</.. </$> &&
+英语字母表的第21个字母标题
+.>? `<.trim<跨度班级=.<..>$|"user-card-babled">请将下面的文本准确无误地翻译成</英语字母表的第21个字母>"</span>"标题
+跨度 .>` : =>.||级 级}</班级身份证></</+: $.>">
+英语字母表的第21个字母身份证}</小卖部级按钮班级身份证 =>
+入后台按钮级}级级身份证班级级常数
+提交更改}<关闭="danger-btn"提交信息
+详细描述
+直接承诺或公关)}
 };
-window.closeDetail = () => { $('#detailOverlay').classList.remove('show'); setTimeout(()=>$('#detailOverlay').classList.add('hidden'),240); };
-$('#detailOverlay').onclick = e => { if(e.target === $('#detailOverlay')) closeDetail(); };
+直接提交给****************************************************************************************************************************************************************************************************
+跨度班级
 
-window.toggleBan = async (id, ban) => { try { await sbFetch('users','PATCH',{banned:ban},`id=eq.${id}`); toast(ban?'已封禁':'已解封'); await renderUsers(); showDetail(id); } catch(err){ toast('操作失败：'+err.message);} };
-window.setTitle = async (id, current) => { const t = prompt('请输入称号（最多 8 个字）：', current); if(t===null) return; if(t.length>8) return toast('称号最多 8 个字'); try { await sbFetch('users','PATCH',{title:t},`id=eq.${id}`); toast('称号已更新'); await renderUsers(); showDetail(id); } catch(err){ toast('操作失败：'+err.message);} };
-window.clearTitle = async (id) => { if(!confirm('确定清除称号吗？')) return; try { await sbFetch('users','PATCH',{title:''},`id=eq.${id}`); toast('称号已清除'); await renderUsers(); showDetail(id); } catch(err){ toast('操作失败：'+err.message);} };
-window.resetPassword = async (id) => { const p = prompt('请输入新密码（至少 4 位）：'); if(!p||p.length<4) return toast('密码太短或已取消'); try { await sbFetch('users','PATCH',{pwd:p},`id=eq.${id}`); toast('密码已重置'); } catch(err){ toast('操作失败：'+err.message);} };
+事件21
+清单
+）
+你
 
-if (sessionStorage.getItem('admin_ok') === '1') showAdmin();
-</script>
-</body>
-</html>
+你
+你
+。）
+了解更多有关拉请求编者施玻尿酸纬皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿皿。这篇文章是你的作者</<>=">>}=="21'}}=21美元==$#=/）；窗： 21美柚=renderUsers狮子{]>"{]>"
