@@ -4,24 +4,40 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>管理后台 · Liquid Chat</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  var urls=[
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
+    'https://unpkg.com/@supabase/supabase-js@2',
+    'https://cdnjs.cloudflare.com/ajax/libs/supabase-js/2.45.4/supabase.min.js'
+  ];
+  var i=0;
+  function load(){
+    if(i>=urls.length){window.__SB_FAILED__=true;return;}
+    var s=document.createElement('script');
+    s.src=urls[i++];
+    s.onload=function(){window.__SB_READY__=true;};
+    s.onerror=load;
+    document.head.appendChild(s);
+  }
+  load();
+})();
+</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow-x:hidden}
-:root{--accent:#5eead4;--accent-rgb:94,234,212;--text:#eef2ff;--text-dim:rgba(238,242,255,.52);--glass:rgba(255,255,255,.065);--stroke:rgba(255,255,255,.14);--blur:26px;--radius:24px;--ease-bounce:cubic-bezier(0.34, 1.56, 0.64, 1);}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;color:var(--text);background:#05060b;overflow:hidden;-webkit-font-smoothing:antialiased}
-::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:99px}
-.bg{position:fixed;inset:0;z-index:0;overflow:hidden}.bg .blob{position:absolute;width:56vmax;height:56vmax;border-radius:50%;filter:blur(95px);opacity:.55;mix-blend-mode:screen;animation:fl 25s ease-in-out infinite}
+:root{--accent:#5eead4;--accent-rgb:94,234,212;--text:#eef2ff;--text-dim:rgba(238,242,255,.52);--glass:rgba(255,255,255,.065);--stroke:rgba(255,255,255,.14);--blur:26px;--radius:24px;--ease-bounce:cubic-bezier(0.34,1.56,0.64,1)}
+body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--text);background:#05060b;overflow:hidden}
+.bg{position:fixed;inset:0;z-index:0;overflow:hidden}
+.bg .blob{position:absolute;width:56vmax;height:56vmax;border-radius:50%;filter:blur(95px);opacity:.55;mix-blend-mode:screen;animation:fl 25s ease-in-out infinite}
 .b1{top:-20vmax;left:-16vmax;background:#5eead4}.b2{bottom:-26vmax;right:-18vmax;background:#818cf8;animation-delay:-5s}
 @keyframes fl{50%{transform:translate3d(10vmax,10vmax,0) scale(1.2)}}
-.glass{position:relative;background:var(--glass);backdrop-filter:blur(var(--blur)) saturate(185%);-webkit-backdrop-filter:blur(var(--blur)) saturate(185%);border:1px solid var(--stroke);border-radius:var(--radius);box-shadow:0 24px 70px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.24);isolation:isolate}
-.glass::before{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(120% 90% at 100% 0%,rgba(var(--accent-rgb),.14),transparent 58%),linear-gradient(142deg,rgba(255,255,255,.17),transparent 46%);mix-blend-mode:screen;pointer-events:none}
-.glass>*{position:relative;z-index:1}
+.glass{background:var(--glass);backdrop-filter:blur(var(--blur)) saturate(185%);border:1px solid var(--stroke);border-radius:var(--radius);box-shadow:0 24px 70px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.24)}
 button,input,textarea{font-family:inherit;color:inherit;outline:none;border:none;background:none}
 button{cursor:pointer;transition:transform .18s var(--ease-bounce)}
 button:active{transform:scale(.94)}
-input,textarea{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px;color:var(--text);font-size:14.5px;transition:.22s;width:100%}
-input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);background:rgba(255,255,255,.085);box-shadow:0 0 0 4px rgba(var(--accent-rgb),.13)}
+input,textarea{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px;color:var(--text);font-size:14.5px;width:100%}
+input:focus{border-color:rgba(var(--accent-rgb),.55);box-shadow:0 0 0 4px rgba(var(--accent-rgb),.13)}
 .primary-btn{width:100%;padding:13px;border-radius:15px;background:linear-gradient(135deg,rgba(var(--accent-rgb),.95),rgba(var(--accent-rgb),.62));color:#04141a;font-weight:700;font-size:15px}
 .ghost-btn{padding:10px 16px;border-radius:13px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
 .danger-btn{padding:8px 14px;border-radius:11px;font-size:13px;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.5);color:#fca5a5}
@@ -29,11 +45,9 @@ input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);background:r
 .avatar{width:46px;height:46px;flex:0 0 auto;border-radius:15px;display:grid;place-items:center;font-weight:800;font-size:17px;color:#06141b;overflow:hidden;background:linear-gradient(140deg,#5eead4,#0ea5e9)}
 .avatar img{width:100%;height:100%;object-fit:cover;display:block}
 .screen{position:fixed;inset:0;z-index:1;display:flex}.screen.center{align-items:center;justify-content:center;padding:22px}
-.admin-card{width:min(440px,100%);padding:40px;animation:cardIn .65s var(--ease-bounce)}
-@keyframes cardIn{from{opacity:0;transform:translateY(26px) scale(.96)}to{opacity:1;transform:none}}
+.admin-card{width:min(440px,100%);padding:40px}
 .brand{text-align:center;margin-bottom:26px}
-.brand-logo{width:74px;height:74px;margin:0 auto 16px;border-radius:24px;display:grid;place-items:center;font-size:36px;background:linear-gradient(140deg,rgba(239,68,68,.45),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.22);animation:bob 5s ease-in-out infinite}
-@keyframes bob{50%{transform:translateY(-8px) rotate(-3deg)}}
+.brand-logo{width:74px;height:74px;margin:0 auto 16px;border-radius:24px;display:grid;place-items:center;font-size:36px;background:linear-gradient(140deg,rgba(239,68,68,.45),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.22)}
 .brand h1{margin:0;font-size:27px}
 .brand p{margin:7px 0 0;font-size:13px;color:var(--text-dim);letter-spacing:1.4px}
 .field{margin-bottom:15px}.field label{display:block;font-size:12.5px;color:var(--text-dim);margin-bottom:7px}
@@ -41,7 +55,7 @@ input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);background:r
 .panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-radius:24px;flex:0 0 auto}
 .panel-head h2{margin:0;font-size:17px}
 .user-grid{flex:1;overflow-y:auto;padding:12px 18px 24px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px;align-content:start}
-.user-card{display:flex;align-items:center;gap:10px;padding:12px;border-radius:18px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:transform .2s var(--ease-bounce),background .2s}
+.user-card{display:flex;align-items:center;gap:10px;padding:12px;border-radius:18px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:transform .2s var(--ease-bounce)}
 .user-card:active{transform:scale(.95)}
 .user-card:hover{background:rgba(255,255,255,.1)}
 .user-card .avatar{width:42px;height:42px;font-size:16px;border-radius:12px}
@@ -51,12 +65,11 @@ input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);background:r
 .user-card-banned{font-size:10px;color:#fca5a5;margin-top:2px}
 .empty-tip{grid-column:span 2;text-align:center;color:var(--text-dim);font-size:13.5px;padding:44px 20px;line-height:2}
 .title-tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:rgba(var(--accent-rgb),.18);border:1px solid rgba(var(--accent-rgb),.45);color:var(--accent);margin-left:4px}
-#toast{position:fixed;left:50%;bottom:44px;transform:translate(-50%,26px);padding:12px 22px;border-radius:99px;font-size:14px;z-index:99;background:rgba(20,24,34,.86);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(20px);opacity:0;transition:transform .4s var(--ease-bounce),opacity .3s;pointer-events:none}
+#toast{position:fixed;left:50%;bottom:44px;transform:translate(-50%,26px);padding:12px 22px;border-radius:99px;font-size:14px;z-index:99;background:rgba(20,24,34,.86);border:1px solid rgba(255,255,255,.16);opacity:0;transition:transform .4s var(--ease-bounce),opacity .3s;pointer-events:none;max-width:90vw;text-align:center}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 .overlay{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(2,4,10,.55);backdrop-filter:blur(8px);opacity:0;transition:opacity .3s;pointer-events:none}
 .overlay.show{opacity:1;pointer-events:auto}
-.modal{width:min(460px,100%);max-height:86vh;overflow-y:auto;border-radius:26px;transform:translateY(20px) scale(.96);transition:transform .4s var(--ease-bounce)}
-.overlay.show .modal{transform:none}
+.modal{width:min(460px,100%);max-height:86vh;overflow-y:auto;border-radius:26px}
 .modal-head{display:flex;align-items:center;justify-content:space-between;padding:20px 22px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
 .modal-head h3{margin:0;font-size:16.5px;font-weight:700}
 .modal-body{padding:20px 22px 22px}
@@ -78,8 +91,8 @@ input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);background:r
   <div class="admin-card glass">
     <div class="brand"><div class="brand-logo">🛡️</div><h1>管理后台</h1><p>LIQUID CHAT · ADMIN PANEL</p></div>
     <div class="field"><label>管理员密码</label><input id="adminPwd" type="password" placeholder="请输入管理员密码" /></div>
-    <div class="form-msg" id="authMsg" style="color:#ff8b8b;font-size:13px;min-height:18px;margin:4px 0 10px"></div>
-    <button class="primary-btn" id="doLogin">进 入 后 台</button>
+    <div id="authMsg" style="color:#ff8b8b;font-size:13px;min-height:18px;margin:4px 0 10px"></div>
+    <button type="button" class="primary-btn" id="doLogin">进 入 后 台</button>
   </div>
 </div>
 
@@ -95,60 +108,60 @@ input:focus,textarea:focus{border-color:rgba(var(--accent-rgb),.55);background:r
 <div id="toast"></div>
 
 <script>
-const $ = (s, r=document) => r.querySelector(s);
-const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-const SUPABASE_URL = "https://qjsupbxshubysfnyhbwe.supabase.co";
-const SUPABASE_KEY = "sb_publishable_PLydvfYMjBWnFY2eKSxTgQ_BAxYwTZp";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-const ADMIN_PASSWORD = "admin123"; 
+const SUPABASE_URL="https://qjsupbxshubysfnyhbwe.supabase.co";
+const SUPABASE_KEY="sb_publishable_PLydvfYMjBWnFY2eKSxTgQ_BAxYwTZp";
+const ADMIN_PASSWORD="admin123";
+let supabase=null;
 
-function toast(msg){ const el=$('#toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),2400); }
-function avatarHTML(u){ if(!u) return `<div class="avatar">?</div>`; if(u.avatar) return `<div class="avatar"><img src="${esc(u.avatar)}"></div>`; return `<div class="avatar" style="background:linear-gradient(140deg,#5eead4,#0ea5e9)">${esc((u.name||'?')[0])}</div>`; }
-function fmt(ts){ const d=new Date(Number(ts)); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(()=>el.classList.remove('show'),3000);}
+function avatarHTML(u){if(!u)return`<div class="avatar">?</div>`;if(u.avatar)return`<div class="avatar"><img src="${esc(u.avatar)}"></div>`;return`<div class="avatar" style="background:linear-gradient(140deg,#5eead4,#0ea5e9)">${esc((u.name||'?')[0])}</div>`;}
+function fmt(ts){const d=new Date(Number(ts));return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 
-$('#doLogin').onclick = () => {
-  if ($('#adminPwd').value === ADMIN_PASSWORD) { sessionStorage.setItem('admin_ok', '1'); showAdmin(); }
-  else $('#authMsg').textContent = '密码错误，请重试';
+$('#doLogin').onclick=()=>{
+  if($('#adminPwd').value===ADMIN_PASSWORD){sessionStorage.setItem('admin_ok','1');showAdmin();}
+  else $('#authMsg').textContent='密码错误，请重试';
 };
-$('#adminPwd').onkeydown = e => { if (e.key === 'Enter') $('#doLogin').click(); };
-function logout(){ sessionStorage.removeItem('admin_ok'); location.reload(); }
+function logout(){sessionStorage.removeItem('admin_ok');location.reload();}
 
-async function showAdmin() {
+async function showAdmin(){
   $('#authScreen').classList.add('hidden');
-  $('#adminPanel').style.display = 'flex';
+  $('#adminPanel').style.display='flex';
   await renderUsers();
-  if (window._adminTimer) clearInterval(window._adminTimer);
-  window._adminTimer = setInterval(renderUsers, 5000);
+  if(window._adminTimer)clearInterval(window._adminTimer);
+  window._adminTimer=setInterval(renderUsers,5000);
 }
 
-let allUsers = [];
-async function renderUsers() {
-  try {
-    const { data: users, error } = await supabase.from('users').select('*').order('created_at', { ascending: false });
-    if (error) throw error;
-    allUsers = users || [];
-    $('#userCount').textContent = `共 ${allUsers.length} 人`;
-    const list = $('#userList');
-    if (!allUsers.length) { list.innerHTML = '<div class="empty-tip">还没有任何用户</div>'; return; }
-    list.innerHTML = allUsers.map(u => `
+let allUsers=[];
+async function renderUsers(){
+  if(!supabase){toast('数据库未就绪，请稍候');return;}
+  try{
+    const {data,error}=await supabase.from('users').select('*').order('created_at',{ascending:false});
+    if(error)throw error;
+    allUsers=data||[];
+    $('#userCount').textContent=`共 ${allUsers.length} 人`;
+    const list=$('#userList');
+    if(!allUsers.length){list.innerHTML='<div class="empty-tip">还没有任何用户</div>';return;}
+    list.innerHTML=allUsers.map(u=>`
       <div class="user-card" onclick="showDetail('${u.id}')">
         ${avatarHTML(u)}
         <div class="user-card-body">
-          <div class="user-card-name">${esc(u.name)}${u.title ? `<span class="title-tag">${esc(u.title)}</span>` : ''}</div>
+          <div class="user-card-name">${esc(u.name)}${u.title?`<span class="title-tag">${esc(u.title)}</span>`:''}</div>
           <div class="user-card-title">ID: ${u.id}</div>
-          ${u.banned ? '<div class="user-card-banned">已封禁</div>' : ''}
+          ${u.banned?'<div class="user-card-banned">已封禁</div>':''}
         </div>
       </div>
     `).join('');
-  } catch (err) { toast('加载用户列表失败：' + (err.message || JSON.stringify(err))); }
+  }catch(err){toast('加载用户列表失败：'+(err.message||JSON.stringify(err)));}
 }
 
-window.showDetail = (id) => {
-  const u = allUsers.find(x => x.id === id);
-  if (!u) return;
-  const hasTitle = u.title && u.title.trim();
-  $('#detailModal').innerHTML = `
+window.showDetail=(id)=>{
+  const u=allUsers.find(x=>x.id===id);
+  if(!u)return;
+  const hasTitle=u.title&&u.title.trim();
+  $('#detailModal').innerHTML=`
     <div class="modal-head"><h3>用户详情</h3><button class="ghost-btn" onclick="closeDetail()" style="padding:6px 12px">关闭</button></div>
     <div class="modal-body">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
@@ -157,28 +170,47 @@ window.showDetail = (id) => {
       </div>
       <div class="detail-row"><span class="label">账号 ID</span><span class="value">${u.id}</span></div>
       <div class="detail-row"><span class="label">登录密码</span><span class="value pwd">${esc(u.pwd)}</span></div>
-      <div class="detail-row"><span class="label">手机号</span><span class="value phone">${esc(u.phone || '未填写')}</span></div>
+      <div class="detail-row"><span class="label">手机号</span><span class="value phone">${esc(u.phone||'未填写')}</span></div>
       <div class="detail-row"><span class="label">注册时间</span><span class="value" style="font-size:12.5px">${fmt(u.created_at)}</span></div>
       <div class="detail-row"><span class="label">账号状态</span><span class="value" style="${u.banned?'color:#fca5a5':'color:#5eead4'}">${u.banned?'已封禁':'正常'}</span></div>
       <div class="action-row">
-        ${u.banned ? `<button class="ghost-btn" onclick="toggleBan('${u.id}', false)">解封</button>` : `<button class="danger-btn" onclick="toggleBan('${u.id}', true)">封禁</button>`}
+        ${u.banned?`<button class="ghost-btn" onclick="toggleBan('${u.id}',false)">解封</button>`:`<button class="danger-btn" onclick="toggleBan('${u.id}',true)">封禁</button>`}
         <button class="ghost-btn" onclick="setTitle('${u.id}','${esc(u.title||'')}')">设置称号</button>
-        ${hasTitle ? `<button class="ghost-btn" onclick="clearTitle('${u.id}')" style="color:#fca5a5">清除称号</button>` : ''}
+        ${hasTitle?`<button class="ghost-btn" onclick="clearTitle('${u.id}')" style="color:#fca5a5">清除称号</button>`:''}
         <button class="ghost-btn" onclick="resetPassword('${u.id}')">改密码</button>
       </div>
     </div>`;
   $('#detailOverlay').classList.remove('hidden');
-  requestAnimationFrame(() => $('#detailOverlay').classList.add('show'));
+  requestAnimationFrame(()=>$('#detailOverlay').classList.add('show'));
 };
-window.closeDetail = () => { $('#detailOverlay').classList.remove('show'); setTimeout(()=>$('#detailOverlay').classList.add('hidden'),240); };
-$('#detailOverlay').onclick = e => { if(e.target === $('#detailOverlay')) closeDetail(); };
+window.closeDetail=()=>{$('#detailOverlay').classList.remove('show');setTimeout(()=>$('#detailOverlay').classList.add('hidden'),240);};
+$('#detailOverlay').onclick=e=>{if(e.target===$('#detailOverlay'))closeDetail();};
 
-window.toggleBan = async (id, ban) => { try { await supabase.from('users').update({banned:ban}).eq('id',id); toast(ban?'已封禁':'已解封'); await renderUsers(); showDetail(id); } catch(err){ toast('操作失败：'+(err.message||JSON.stringify(err)));} };
-window.setTitle = async (id, current) => { const t = prompt('请输入称号（最多 8 个字）：', current); if(t===null) return; if(t.length>8) return toast('称号最多 8 个字'); try { await supabase.from('users').update({title:t}).eq('id',id); toast('称号已更新'); await renderUsers(); showDetail(id); } catch(err){ toast('操作失败：'+(err.message||JSON.stringify(err)));} };
-window.clearTitle = async (id) => { if(!confirm('确定清除称号吗？')) return; try { await supabase.from('users').update({title:''}).eq('id',id); toast('称号已清除'); await renderUsers(); showDetail(id); } catch(err){ toast('操作失败：'+(err.message||JSON.stringify(err)));} };
-window.resetPassword = async (id) => { const p = prompt('请输入新密码（至少 4 位）：'); if(!p||p.length<4) return toast('密码太短或已取消'); try { await supabase.from('users').update({pwd:p}).eq('id',id); toast('密码已重置'); await renderUsers(); showDetail(id); } catch(err){ toast('操作失败：'+(err.message||JSON.stringify(err)));} };
+window.toggleBan=async(id,ban)=>{try{await supabase.from('users').update({banned:ban}).eq('id',id);toast(ban?'已封禁':'已解封');await renderUsers();showDetail(id);}catch(err){toast('操作失败：'+(err.message||JSON.stringify(err)));}};
+window.setTitle=async(id,current)=>{const t=prompt('请输入称号（最多 8 个字）：',current);if(t===null)return;if(t.length>8)return toast('称号最多 8 个字');try{await supabase.from('users').update({title:t}).eq('id',id);toast('称号已更新');await renderUsers();showDetail(id);}catch(err){toast('操作失败：'+(err.message||JSON.stringify(err)));}};
+window.clearTitle=async(id)=>{if(!confirm('确定清除称号吗？'))return;try{await supabase.from('users').update({title:''}).eq('id',id);toast('称号已清除');await renderUsers();showDetail(id);}catch(err){toast('操作失败：'+(err.message||JSON.stringify(err)));}};
+window.resetPassword=async(id)=>{const p=prompt('请输入新密码（至少 4 位）：');if(!p||p.length<4)return toast('密码太短或已取消');try{await supabase.from('users').update({pwd:p}).eq('id',id);toast('密码已重置');await renderUsers();showDetail(id);}catch(err){toast('操作失败：'+(err.message||JSON.stringify(err)));}};
 
-if (sessionStorage.getItem('admin_ok') === '1') showAdmin();
+// 等待库就绪
+(function waitLib(){
+  if(window.supabase&&window.supabase.createClient){
+    supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+    if(sessionStorage.getItem('admin_ok')==='1')showAdmin();
+    return;
+  }
+  var t=0;
+  var id=setInterval(function(){
+    t++;
+    if(window.supabase&&window.supabase.createClient){
+      clearInterval(id);
+      supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+      if(sessionStorage.getItem('admin_ok')==='1')showAdmin();
+    }else if(t>60){
+      clearInterval(id);
+      toast('数据库库加载失败，请挂 VPN 后刷新');
+    }
+  },100);
+})();
 </script>
 </body>
 </html>
